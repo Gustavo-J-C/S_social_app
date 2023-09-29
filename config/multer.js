@@ -1,10 +1,16 @@
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const aws = require('aws-sdk');
+const multerS3 = require('multer-s3');
 
-module.exports = {
-    dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
-    storage: multer.diskStorage({
+const bucket_name = process.env.AWS_BUCKET_NAME;
+const bucket_region = process.env.AWS_BUCKET_REGION;
+const aws_access_key = process.env.AWS_ACCESS_KEY;
+const aws_secret_key = process.env.AWS_SECRET_KEY;
+
+const storageTypes = {
+    local: multer.diskStorage({
         destination: (req, file, cb) => {
             cb(null, path.resolve(__dirname, '..', 'tmp', 'uploads'))
         },
@@ -12,11 +18,29 @@ module.exports = {
             crypto.randomBytes(16, (err, hash) => {
                 if (err) cb(err);
 
+                file.key = `${hash.toString('hex')}-${file.originalname}`
+                cb(null, file.key);
+            })
+        }
+    }),
+    S3: multerS3({
+        s3: new aws.S3(),
+        bucket: 'socialappstorage',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        acl: 'public-read',
+        key: (req, file, cb) => {
+            crypto.randomBytes(16, (err, hash) => {
+                if (err) cb(err);
+
                 const fileName = `${hash.toString('hex')}-${file.originalname}`
                 cb(null, fileName);
             })
         }
-    }),
+    })
+}
+module.exports = {
+    dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
+    storage: storageTypes.S3,
     limits: {
         fileSize: 2 * 1024 * 1024,
     },

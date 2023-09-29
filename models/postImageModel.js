@@ -18,17 +18,17 @@ const PostImage = sequelize.define('post_image', {
     type: Sequelize.STRING(255),
     allowNull: false,
   },
-  destination: {
-    type: Sequelize.TEXT,
-    allowNull: false,
-  },
   path: {
     type: Sequelize.TEXT,
-    allowNull: false,
+    allowNull: true,
+  },
+  url: {
+    type: Sequelize.TEXT,
+    allowNull: true,
   },
   filename: {
     type: Sequelize.STRING(255),
-    allowNull: false,
+    allowNull: true,
   },
   size: {
     type: Sequelize.INTEGER,
