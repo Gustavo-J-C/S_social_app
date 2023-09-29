@@ -1,11 +1,28 @@
 const Post = require('../models/PostModel');
 const PostImage = require('../models/PostImageModel');
 
-exports.getPosts = async function (req, res, next) {
-    const posts = await Post.findAll({
-        include: PostImage
-    });
-    res.json(posts)
+exports.getPosts = async function(req, res) {
+    const page = parseInt(req.query.page) || 1; // Página padrão: 1
+    const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho padrão: 10
+
+    // Cálculo do deslocamento (offset) com base na página atual e tamanho da página
+    const offset = (page - 1) * pageSize;
+
+    // Consulta ao banco de dados para obter os posts paginados
+    // Exemplo de uso de OFFSET e LIMIT no Sequelize (ou SQL)
+    Post.findAll({
+        offset: offset,
+        limit: pageSize,
+        include: PostImage,
+        order: [['created_at', 'DESC']], // Ordenar por data de criação, por exemplo
+    })
+        .then((posts) => {
+            res.json({ page: page, pageSize: pageSize, posts: posts });
+        })
+        .catch((error) => {
+            console.error('Error fetching posts:', error);
+            res.status(500).json({ message: 'Error fetching posts' });
+        });
 };
 
 exports.deletePost = async function (req, res) {
