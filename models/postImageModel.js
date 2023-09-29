@@ -1,5 +1,11 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database');
+const aws = require('aws-sdk');
+const fs = require('fs');
+const path = require('path');
+const { promisify } = require('util');
+
+const s3 = new aws.S3();
 
 const PostImage = sequelize.define('post_image', {
   id: {
@@ -44,6 +50,23 @@ const PostImage = sequelize.define('post_image', {
   },
 }, {
   timestamps: false,
+  hooks: {
+    beforeCreate: (postImageInstance) => {
+      if (!postImageInstance.url) {
+        postImageInstance.url = `${process.env.APP_URL}/files/${postImageInstance.filename}`;
+      }
+    },
+    beforeDestroy: (postImageInstance) => {
+      if (process.env.STORAGE_TYPE === 'S3') {
+        return s3.deleteObject({
+          Bucket: 'socialappstorage',
+          Key: postImageInstance.filename
+        }).promise()
+      } else {
+        return promisify(fs.unlink)(path.resolve(__dirname, '..', 'tmp', 'uploads', postImageInstance.filename))
+      }
+    }
+  }
 });
 
 module.exports = PostImage;

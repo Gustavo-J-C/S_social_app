@@ -1,8 +1,11 @@
 require('dotenv').config();
 
+
+const path = require('path');
 const express = require('express');
 
 const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
 const morgan = require('morgan');
 
 const app = express();
@@ -17,9 +20,11 @@ app.use(function (req, res, next) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
+app.use('/files', express.static(path.resolve(__dirname, 'tmp', 'uploads')));
 
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log('listening on port', PORT));
