@@ -38,4 +38,18 @@ const User = sequelize.define('users', {
   timestamps: false,
 });
 
+User.belongsToMany(User, {
+  as: 'followers', // Apelido para a associação de seguidores
+  through: 'Followers', // Nome da tabela intermediária
+  foreignKey: 'users_followed_id', // Campo que se refere ao usuário seguido
+  otherKey: 'user_follower_id', // Campo que se refere ao seguidor
+});
+
+User.belongsToMany(User, {
+  as: 'following', // Apelido para a associação de usuários seguidos
+  through: 'Followers', // Nome da tabela intermediária
+  foreignKey: 'user_follower_id', // Campo que se refere ao seguidor
+  otherKey: 'users_followed_id', // Campo que se refere ao usuário seguido
+});
+
 module.exports = User;

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database'); // Importe sua instância do Sequelize aqui
+const User = require('./UserModel');
 
 const Follower = sequelize.define('followers', {
   id: {
@@ -26,5 +27,8 @@ const Follower = sequelize.define('followers', {
 }, {
   timestamps: false,
 });
+
+Follower.belongsTo(User, { as: 'followerUser', foreignKey: 'user_follower_id' });
+Follower.belongsTo(User, { as: 'followingUser', foreignKey: 'users_followed_id' });
 
 module.exports = Follower;

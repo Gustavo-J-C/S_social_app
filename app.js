@@ -6,6 +6,7 @@ const express = require('express');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
 const morgan = require('morgan');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/files', express.static(path.resolve(__dirname, 'tmp', 'uploads')));
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
+app.use('/profile', profileRoutes);
 
 const PORT = process.env.PORT || 3000;
 
