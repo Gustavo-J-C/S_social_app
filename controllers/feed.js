@@ -84,7 +84,11 @@ exports.uploadPostImages = async function (req, res) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
+        console.log(req.file);
+        console.log(process.env.STORAGE_TYPE);
+        // return
         const { originalname, mimetype, filename = null, size, key, location: url = '' } = req.file;
+        // return
 
         // Crie o registro de imagem do post no banco de dados usando o modelo PostImage
         const createdImage = await PostImage.create({
@@ -92,7 +96,7 @@ exports.uploadPostImages = async function (req, res) {
             originalname,
             type: mimetype,
             path: req.file.path,
-            filename: key,
+            filename,
             url,
             size,
         });

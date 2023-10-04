@@ -33,6 +33,12 @@ const storageTypes = {
         }
     })
 }
+
+if (!(process.env.STORAGE_TYPE in storageTypes)) {
+    console.log(Object.keys(storageTypes));
+    throw new Error(`A variável STORAGE_TYPE não corresponde a um valor válido.`);
+}
+
 module.exports = {
     dest: path.resolve(__dirname, '..', '..', 'tmp', 'uploads'),
     storage: storageTypes[process.env.STORAGE_TYPE],
