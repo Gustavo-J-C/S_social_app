@@ -1,28 +1,30 @@
 const Post = require('../models/PostModel');
 const PostImage = require('../models/PostImageModel');
+const PostLike = require('../models/postLikeModel');
 
-exports.getPosts = async function(req, res) {
-    const page = parseInt(req.query.page) || 1; // Página padrão: 1
-    const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho padrão: 10
+exports.getPosts = async function (req, res) {
+    try {
 
-    // Cálculo do deslocamento (offset) com base na página atual e tamanho da página
-    const offset = (page - 1) * pageSize;
+        const page = parseInt(req.query.page) || 1; // Página padrão: 1
+        const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho padrão: 10
 
-    // Consulta ao banco de dados para obter os posts paginados
-    // Exemplo de uso de OFFSET e LIMIT no Sequelize (ou SQL)
-    Post.findAll({
-        offset: offset,
-        limit: pageSize,
-        include: PostImage,
-        order: [['created_at', 'DESC']], // Ordenar por data de criação, por exemplo
-    })
-        .then((posts) => {
-            res.json({ page: page, pageSize: pageSize, posts: posts });
+        // Cálculo do deslocamento (offset) com base na página atual e tamanho da página
+        const offset = (page - 1) * pageSize;
+
+        // Consulta ao banco de dados para obter os posts paginados
+        // Exemplo de uso de OFFSET e LIMIT no Sequelize (ou SQL)
+        const posts = await Post.findAll({
+            offset: offset,
+            limit: pageSize,
+            include: PostImage,
+            order: [['created_at', 'DESC']], // Ordenar por data de criação, por exemplo
         })
-        .catch((error) => {
-            console.error('Error fetching posts:', error);
-            res.status(500).json({ message: 'Error fetching posts' });
-        });
+
+        res.json({ page: page, pageSize: pageSize, posts: posts });
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        res.status(500).json({ message: 'Error fetching posts' });
+    }
 };
 
 exports.deletePost = async function (req, res) {
@@ -62,33 +64,74 @@ exports.createPost = async function (req, res) {
         const createdPost = await Post.create({
             title: title,
             description: description,
-            users_id: 1, // Substitua 'req.user.id' pelo ID do usuário atual
+            users_id: req.user.id, // Use o ID do usuário atual
         });
-
-        let createdImage
-        // Verifique se o arquivo foi enviado no req.file
-        if (req.file) {
-            console.log(req.file);
-            const { originalname, mimetype, filename = null, size, key, location: url = "" } = req.file;
-
-            // Crie o registro de imagem do post no banco de dados usando o modelo PostImage
-            createdImage = await PostImage.create({
-                post_id: createdPost.id,
-                originalname,
-                type: mimetype,
-                path: req.file.path,
-                filename: key,
-                url,
-                size,
-            });
-        }
 
         res.status(201).json({
             message: 'Post created successfully',
-            post: { ...createdPost.dataValues, post_images: createdImage },
+            post: createdPost,
         });
     } catch (error) {
         console.error('Error creating post:', error);
         res.status(500).json({ message: 'Error creating post' });
+    }
+};
+
+exports.uploadPostImages = async function (req, res) {
+    try {
+        // Verifique se o arquivo foi enviado no req.file
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const { originalname, mimetype, filename = null, size, key, location: url = '' } = req.file;
+
+        // Crie o registro de imagem do post no banco de dados usando o modelo PostImage
+        const createdImage = await PostImage.create({
+            post_id: req.body.postId, // Substitua pelo ID do post ao qual a imagem está associada
+            originalname,
+            type: mimetype,
+            path: req.file.path,
+            filename: key,
+            url,
+            size,
+        });
+
+        res.status(201).json({
+            message: 'Image uploaded successfully',
+            image: createdImage,
+        });
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        res.status(500).json({ message: 'Error uploading image' });
+    }
+};
+
+exports.likePost = async function (req, res) {
+    try {
+        const postId = req.params.postId; // Você deve ter um parâmetro postId na rota
+        const userId = req.user.userId; // Suponha que você tenha informações do usuário autenticado
+
+        console.log(req.user);
+
+        await PostLike.create({
+            post_id: postId,
+            user_id: userId,
+        });
+
+        res.json({ message: 'Você curtiu o post.' });
+    } catch (error) {
+        if (error.parent.sqlState === '23000') {
+
+            if (error.index === 'fk_users_has_posts_posts1' && error.value === String(req?.params?.postId)) {
+                return res.status(404).json({ message: 'O post não existe.' });
+
+            } else if (error.parent.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ message: 'Post já curtido anteriormente' });
+            }
+        } else {
+            console.error('Erro ao curtir o post:', error);
+            res.status(500).json({ message: 'Erro ao curtir o post.' });
+        }
     }
 };

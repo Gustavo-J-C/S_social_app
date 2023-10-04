@@ -113,7 +113,6 @@ exports.getFollowers = async function (req, res) {
 exports.follow = async function (req, res) {
     try {
         const userId = req.user.userId;
-        console.log(req.user);
         const { targetUserId } = req.body;
 
         await Follower.create({
@@ -123,8 +122,13 @@ exports.follow = async function (req, res) {
 
         return res.json({ message: 'Você está seguindo o usuário agora.' });
     } catch (error) {
-        console.error('Erro ao seguir o usuário:', error);
-        res.status(500).json({ message: 'Erro ao seguir o usuário' });
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            console.error('Usuário já está sendo seguido:', error);
+            return res.status(400).json({ message: 'Você já está seguindo este usuário.' });
+        } else {
+            console.error('Erro ao seguir o usuário:', error);
+            return res.status(500).json({ message: 'Erro ao seguir o usuário.' });
+        }
     }
 }
 
@@ -133,12 +137,16 @@ exports.unfollow = async function (req, res) {
         const userId = req.user.userId;
         const { targetUserId } = req.body;
 
-        await Follower.destroy({
+        const result = await Follower.destroy({
             where: {
                 user_follower_id: userId,
                 users_followed_id: targetUserId,
             },
         });
+
+        if (result === 0) {
+            return res.status(400).json({ message: 'Você já havia deixado de seguir este usuário.' });
+        }
 
         return res.json({ message: 'Você deixou de seguir o usuário.' });
     } catch (error) {

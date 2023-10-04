@@ -53,7 +53,17 @@ exports.login = async function (req, res, next) {
     // Se as credenciais estiverem corretas, gere um token JWT para autenticação
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: '2h' });
 
-    res.status(200).json({ message: 'Login successful', token: token });
+    res.status(200).json({
+      data: {
+        message: 'Login successful',
+        token: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        }
+      }
+    });
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({ message: 'Error logging in' });

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database');
+const Post = require('./PostModel');
 
 const PostLike = sequelize.define('post_likes', {
   user_id: {
@@ -17,12 +18,11 @@ const PostLike = sequelize.define('post_likes', {
   },
   deleted_at: {
     type: Sequelize.DATE,
-  },
-  comment_likescol: {
-    type: Sequelize.STRING(45),
-  },
+  }
 }, {
   timestamps: false,
 });
 
+
+PostLike.removeAttribute('id');
 module.exports = PostLike;

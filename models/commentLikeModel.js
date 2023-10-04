@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database');
+const Comment = require('./commentModel');
 
 const CommentLike = sequelize.define('comment_likes', {
   users_id: {
@@ -18,11 +19,10 @@ const CommentLike = sequelize.define('comment_likes', {
   deleted_at: {
     type: Sequelize.DATE,
   },
-  comment_likescol: {
-    type: Sequelize.STRING(45),
-  },
 }, {
   timestamps: false,
 });
+
+
 
 module.exports = CommentLike;

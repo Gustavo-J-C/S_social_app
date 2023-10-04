@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database');
+const Post = require('./PostModel');
+const CommentLike = require('./commentLikeModel');
 
 const Comment = sequelize.define('comments', {
   id: {
@@ -30,5 +32,7 @@ const Comment = sequelize.define('comments', {
 }, {
   timestamps: false,
 });
+
+Comment.hasMany(CommentLike, { foreignKey: 'comments_id' });
 
 module.exports = Comment;

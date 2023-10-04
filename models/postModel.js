@@ -1,6 +1,8 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../database');
 const PostImage = require('./PostImageModel');
+const Comment = require('./commentModel');
+const PostLike = require('./postLikeModel');
 
 const Post = sequelize.define('posts', {
   id: {
@@ -33,5 +35,7 @@ const Post = sequelize.define('posts', {
 });
 
 Post.hasMany(PostImage, { foreignKey: 'post_id' });
+Post.hasMany(Comment, { foreignKey: 'post_id' });
+Post.hasMany(PostLike, { foreignKey: 'post_id' });
 
 module.exports = Post;
