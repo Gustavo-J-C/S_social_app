@@ -2,7 +2,7 @@ import { BackHandler, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
-import WelcomeImage from '../../assests/imgs/welcomeImage.png';
+import WelcomeImage from '../../assets/imgs/welcomeImage.png';
 import React, { useState } from "react";
 
 import {
@@ -25,7 +25,7 @@ export function SignIn({ navigation }: any) {
   const [passwordInput, setPasswordInput] = useState<string>("");
   const [viewPassword, setViewPassword] = useState<boolean>(false);
 
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -42,10 +42,12 @@ export function SignIn({ navigation }: any) {
 
   async function handleSignIn() {
     try {
+      
       await signIn({
         email: emailInput,
         password: passwordInput,
       });
+      
     } catch (error) {
       console.error(error);
     }
@@ -59,6 +61,7 @@ export function SignIn({ navigation }: any) {
       <Form>
         <TextInputContainer>
           <TextInput
+            value={emailInput}
             placeholder="Digite seu e-mail"
             onChangeText={(e) => setEmailInput(e)}
             placeholderTextColor={"#BDBDBD"}

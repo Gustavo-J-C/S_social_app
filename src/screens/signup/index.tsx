@@ -1,7 +1,7 @@
 import { BackHandler, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import Feather from '@expo/vector-icons/Feather';
-import WelcomeImage from '../../assests/imgs/welcomeImage.png';
+import WelcomeImage from '../../assets/imgs/welcomeImage.png';
 import React, { useState } from "react";
 
 import {
