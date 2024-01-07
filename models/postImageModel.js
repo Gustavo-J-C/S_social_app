@@ -52,7 +52,6 @@ const PostImage = sequelize.define('post_image', {
   timestamps: false,
   hooks: {
     beforeCreate: (postImageInstance) => {
-      console.log(postImageInstance.url);
       if (!postImageInstance.url) {
         if (process.env.STORAGE_TYPE == 's3') {
           postImageInstance.url = `${process.env.APP_URL}/files/${postImageInstance.filename}`;

@@ -1,23 +1,25 @@
 const Post = require('../models/PostModel');
 const PostImage = require('../models/PostImageModel');
 const PostLike = require('../models/postLikeModel');
+const Comment = require('../models/commentModel');
 
 exports.getPosts = async function (req, res) {
     try {
+        
+        const userId = req.query.userId | null;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
 
-        const page = parseInt(req.query.page) || 1; // Página padrão: 1
-        const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho padrão: 10
+        console.log(req.params);
 
-        // Cálculo do deslocamento (offset) com base na página atual e tamanho da página
         const offset = (page - 1) * pageSize;
 
-        // Consulta ao banco de dados para obter os posts paginados
-        // Exemplo de uso de OFFSET e LIMIT no Sequelize (ou SQL)
-        const posts = await Post.findAll({
+        const posts = await Post.scope(['withLikeCount', 'withCommentCount', { method: ['withLikeByUser', userId] }]).findAll({
             offset: offset,
             limit: pageSize,
-            include: PostImage,
-            order: [['created_at', 'DESC']], // Ordenar por data de criação, por exemplo
+            include: [PostImage],
+            order: [['created_at', 'DESC']],
+            userId
         })
 
         res.json({ page: page, pageSize: pageSize, posts: posts });
@@ -49,10 +51,10 @@ exports.deletePost = async function (req, res) {
         // Exclua o post após excluir as imagens associadas
         await post.destroy();
 
-        return res.status(204).send(); // Retorna um status 204 (No Content) após a exclusão
+        return res.json({ message: 'Post deleted successfully' });
     } catch (error) {
         console.error('Error deleting post:', error);
-        res.status(500).json({ message: 'Error deleting post' });
+        return res.status(500).json({ error: 'Error deleting post' });
     }
 };
 
@@ -84,10 +86,8 @@ exports.uploadPostImages = async function (req, res) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        console.log(req.file);
-        console.log(process.env.STORAGE_TYPE);
         // return
-        const { originalname, mimetype, filename = null, size, key, location: url = '' } = req.file;
+        const { originalname, mimetype, filename, size, key, location: url = '' } = req.file;
         // return
 
         // Crie o registro de imagem do post no banco de dados usando o modelo PostImage
@@ -113,29 +113,99 @@ exports.uploadPostImages = async function (req, res) {
 
 exports.likePost = async function (req, res) {
     try {
-        const postId = req.params.postId; // Você deve ter um parâmetro postId na rota
-        const userId = req.user.userId; // Suponha que você tenha informações do usuário autenticado
-
-        console.log(req.user);
+        const postId = req.params.postId;
+        const userId = req.user.userId;
 
         await PostLike.create({
             post_id: postId,
             user_id: userId,
         });
 
-        res.json({ message: 'Você curtiu o post.' });
+        res.json({ message: 'You liked the post.' });
     } catch (error) {
         if (error.parent.sqlState === '23000') {
 
             if (error.index === 'fk_users_has_posts_posts1' && error.value === String(req?.params?.postId)) {
-                return res.status(404).json({ message: 'O post não existe.' });
+                return res.status(404).json({ message: 'The post does not exist.' });
 
             } else if (error.parent.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ message: 'Post já curtido anteriormente' });
+                return res.status(400).json({ message: 'Post already liked previously.' });
             }
         } else {
-            console.error('Erro ao curtir o post:', error);
-            res.status(500).json({ message: 'Erro ao curtir o post.' });
+            console.error('Error liking the post:', error);
+            res.status(500).json({ message: 'Error liking the post.' });
         }
     }
 };
+
+exports.unlikePost = async function (req, res) {
+    try {
+        const postId = req.params.postId;
+        const userId = req.user.userId;
+
+        const deletedCount = await PostLike.destroy({
+            where: {
+                post_id: postId,
+                user_id: userId,
+            },
+        });
+
+        if (deletedCount === 0) {
+            return res.status(400).json({ message: 'Post not liked previously.' });
+        }
+
+        res.json({ message: 'You unliked the post.' });
+    } catch (error) {
+        console.error('Error unliking the post:', error);
+        res.status(500).json({ message: 'Error unliking the post.' });
+    }
+};
+
+
+exports.getPostLikes = async function (req, res) {
+    try {
+        const postId = req.params.postId;
+        const userId = req.query.userId || null; // userId é opcional, pode ser null se não estiver disponível
+
+        // Consulta ao banco de dados para obter os likes do post
+        const likes = await PostLike.findAll({
+            where: {
+                post_id: postId,
+            },
+        });
+
+        const likedPost = userId
+            ? await PostLike.findOne({
+                where: {
+                    post_id: postId,
+                    user_id: userId,
+                },
+            })
+            : null;
+
+        res.json({ likes: likes.length, likedPost: likedPost !== null });
+    } catch (error) {
+        const postId = req.params.postId;
+
+        console.error(`Error fetching likes for post ${postId}:`, error);
+        res.status(500).json({ message: `Error fetching likes for the post ${postId}` });
+    }
+};
+
+exports.checkLike = async function (userId, postId) {
+    try {
+        const postId = req.params.postId;
+        const userId = req.query.userId;
+
+        const likedPost = await PostLike.findOne({
+            where: {
+                post_id: postId,
+                user_id: userId,
+            },
+        })
+
+        res.json({ likedPost: likedPost });
+    } catch (error) {
+
+    }
+}

@@ -2,19 +2,20 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Para gerar tokens JWT
 const User = require('../models/UserModel'); // Importe o modelo de usuário
 
-// Função para registro de usuário com criptografia de senha
 exports.register = async function (req, res, next) {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, confirmPassword } = req.body;
 
-    // Verifique se o email já está em uso
     const existingUser = await User.findOne({ where: { email: email } });
 
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already in use' });
+      return res.status(402).json({ message: 'Email already in use' });
     }
 
-    // Criptografe a senha antes de armazená-la no banco de dados
+    if (password !== confirmPassword) {
+      return res.status(422).json({ message: 'Passwords do not match' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10); // Use uma salto de 10 rounds
 
     // Crie um novo usuário com a senha criptografada
@@ -24,7 +25,19 @@ exports.register = async function (req, res, next) {
       password: hashedPassword,
     });
 
-    res.status(201).json({ message: 'User registered successfully' });
+    const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: '2h' });
+
+    res.status(201).json({ 
+      data: {
+        message: 'User registered successfully',
+        token: token,
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email
+        }
+      }
+    });
   } catch (error) {
     console.error('Error registering user:', error);
     res.status(500).json({ message: 'Error registering user' });
@@ -40,7 +53,7 @@ exports.login = async function (req, res, next) {
     const user = await User.findOne({ where: { email: email } });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(404).json({ message: "User account does not exist." });
     }
 
     // Verifique se a senha fornecida corresponde à senha armazenada (comparando hashes)

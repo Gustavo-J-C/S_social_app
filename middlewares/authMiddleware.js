@@ -13,7 +13,6 @@ function authenticateToken(req, res, next) {
     if (err) {
       return res.status(403).json({ message: 'Token expired or invalid' });
     }
-    console.log(user);
     req.user = user; // Defina o usuário no objeto de solicitação para uso posterior
     next();
   });

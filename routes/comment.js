@@ -5,11 +5,10 @@ const checkCommentExistence = require('../middlewares/commentMiddleware');
 const authenticateToken = require('../middlewares/authMiddleware');
 
 router.post('/create', authenticateToken, commentController.createComment);
-router.get('/comments', commentController.getPostComments);
-
-router.get('/comment/:commentId', checkCommentExistence, commentController.getComment);
-router.put('/comment/:commentId', authenticateToken, checkCommentExistence, commentController.updateComment);
-router.delete('/comment/:commentId', authenticateToken, checkCommentExistence, commentController.deleteComment);
+router.get('/post/:postId', commentController.getPostComments);
+router.get('/current/:commentId', checkCommentExistence, commentController.getComment);
+router.put('/current/:commentId', authenticateToken, checkCommentExistence, commentController.updateComment);
+router.delete('/current/:commentId', authenticateToken, checkCommentExistence, commentController.deleteComment);
 
 router.get('/user/:userId', authenticateToken, commentController.getCommentsPerPerson);
 

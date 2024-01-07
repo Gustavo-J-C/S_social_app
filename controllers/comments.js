@@ -26,7 +26,7 @@ exports.createComment = async function(req, res) {
 
 exports.getPostComments = async function (req, res) {
     try {
-        const postId = req.query.postId;
+        const postId = req.params.postId;
 
         const comments = await Comment.findAll({
             where: {
@@ -34,10 +34,19 @@ exports.getPostComments = async function (req, res) {
             },
         });
 
-        res.json({count: comments.length, comments});
+        res.status(200).json({
+            data: {
+                count: comments.length,
+                comments: comments,
+            },
+            message: 'Comments fetched successfully.',
+        });
     } catch (error) {
         console.error('Erro ao buscar todos os comentários:', error);
-        res.status(500).json({ message: 'Erro ao buscar todos os comentários.' });
+        res.status(500).json({
+            message: 'Error fetching comments.',
+            error: error.message,
+        });
     }
 };
 

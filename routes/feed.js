@@ -13,5 +13,9 @@ routes.post('/post', authenticateToken, feedController.createPost)
 routes.post('/post/images', authenticateToken, multer(multerConfig).single('file'), feedController.uploadPostImages);
 
 routes.post('/post/:postId/like', authenticateToken, feedController.likePost);
+routes.delete('/post/:postId/unlike', authenticateToken, feedController.unlikePost);
+
+routes.get('/post/:postId/likes', authenticateToken, feedController.getPostLikes);
+routes.get('/post/:postId/user/:userId/like', authenticateToken, feedController.checkLike);
 
 module.exports = routes;
