@@ -6,10 +6,13 @@ import { ViewStyle, FlexAlignType } from "react-native";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
+import { string } from "zod";
+
+const baseUri = "http://192.168.0.106:3000";
 
 type PropType = {
     post: Post
-    handleComment: () => void
+    handleComment: (postId: string) => void,
 }
 
 type StylesType = {
@@ -73,8 +76,9 @@ const styles: StylesType = {
 
 export default function PostComponent({ post, handleComment }: PropType) {
     const images = post.post_images;
-    const [liked, setLiked] = useState(false);
-    const [likes, setLikes] = useState<number>(0);
+    
+    const [liked, setLiked] = useState(post.user_liked ? true : false);
+    const [likes, setLikes] = useState<number>(post.like_count);
 
     const timePassed = checkTimePassed(post.created_at);
     const { likePost, unlikePost, getUserInfo, getPostLikes } = useData();
@@ -92,33 +96,15 @@ export default function PostComponent({ post, handleComment }: PropType) {
         };
 
         fetchUserInfo();
-    }, [post.users_id]);
-
-    useEffect(() => {
-        const fetchPostLikes = async () => {
-            try {
-                const likes = await getPostLikes(String(post.id));
-
-                // Atualiza o estado de liked e a quantidade de likes
-                setLiked(likes.likedPost);
-                setLikes(likes.likes.length);
-            } catch (error) {
-                console.error("Error fetching post likes:", error);
-            }
-        };
-
-        fetchPostLikes();
-    }, [post.id, getPostLikes]);
+    }, []);
 
     const handleToggleLike = async () => {
         try {
             if (liked) {
-                // Se já curtiu, então descurte
                 await unlikePost(String(post.id));
                 setLiked(false);
                 setLikes(likes - 1);
             } else {
-                // Se não curtiu, então curte
                 await likePost(String(post.id));
                 setLiked(true);
                 setLikes(likes + 1);
@@ -136,16 +122,16 @@ export default function PostComponent({ post, handleComment }: PropType) {
             </View>
             {images && images.length > 0 && <Image
                 style={styles.image}
-                source={{ uri: images[0].url }}
-                onError={(error) => console.log("Erro na imagem:", error.nativeEvent.error)} />}
+                source={{ uri: images[0]?.url?.replace("http://localhost:3000", baseUri) }}
+                onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />}
             <View style={styles.actionsContainer}>
                 <View style={styles.plusIcon}>
                     <Feather name="plus-circle" size={25} color={theme.COLORS.PRIMARY} />
                 </View>
                 <View style={styles.actionsGroup}>
                     <View style={styles.actionItem}>
-                        <Text>20</Text>
-                        <FontAwesome name="commenting-o" onPress={handleComment} size={25} color={theme.COLORS.PRIMARY} />
+                        <Text>{post.comment_count}</Text>
+                        <FontAwesome name="commenting-o" onPress={() => handleComment(String(post.id))} size={25} color={theme.COLORS.PRIMARY} />
                     </View>
                     <TouchableOpacity onPress={handleToggleLike} style={styles.actionItem}>
                         <Text>{likes}</Text>

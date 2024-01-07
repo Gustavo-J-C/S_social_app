@@ -1,34 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, Text, ActivityIndicator, Modal, Alert, View, Dimensions, StyleSheet, TouchableOpacity, Animated, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { createComment } from '../../utils/comments/createComment'
+import { FontAwesome } from "@expo/vector-icons";
 import PostComponent from "../../components/Post/PostComponent";
 import { useData } from "../../hooks/data";
 import CommentComponent from "../../components/Comment/CommentComponent";
+import { useAuth } from "../../hooks/auth";
 
 export default function Home() {
-  const { posts, getPosts, loading, hasMorePosts, likePost } = useData();
+  const { posts, getPosts, loading, hasMorePosts, getPostComments } = useData();
+
+  let selectedPost: null | string = null;
+  const [postComments, setPostComments] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [commentDescription, setCommentDescription] = useState("");
   const fadeAnimation = new Animated.Value(1);
 
-  useEffect(() => {
-    // Carregar os posts iniciais
-    getPosts();
-  }, []);
+  const {user} = useAuth();
+  const getCommentsData = async (postId: string) => {
+    selectedPost = postId
+    const newComments = await getPostComments(postId)
+    setPostComments(newComments)
+    handleComment();
+  }
 
-  const handleComment = () => {
-
+  const handleComment = async () => {
     Animated.timing(fadeAnimation, {
       toValue: modalVisible ? 0 : 1,
-      duration: 300, // Adjust the duration as needed
-      useNativeDriver: false, // Set to true if you are using Hermes engine
+      duration: 400,
+      useNativeDriver: true,
     }).start(() => setModalVisible(!modalVisible));
   };
 
 
   const handleEndReached = () => {
     if (hasMorePosts && !loading) {
-      // Carregar mais posts quando o final da lista é alcançado
-      getPosts(); // Agora a função getPosts faz a paginação
+      getPosts(); 
     }
   };
 
@@ -36,22 +44,14 @@ export default function Home() {
     return loading ? <ActivityIndicator size="large" /> : null;
   };
 
-  const mockData = [
-    { id: 1, user_id: 1, post_id: 1, description: "Ele é muito louco", created_at: String(Date.now()), updated_at: String(Date.now()) },
-    { id: 1, user_id: 1, post_id: 1, description: "Ele é muito louco", created_at: String(Date.now()), updated_at: String(Date.now()) },
-    { id: 1, user_id: 1, post_id: 1, description: "Ele é muito louco", created_at: String(Date.now()), updated_at: String(Date.now()) },
-    { id: 1, user_id: 1, post_id: 1, description: "Ele é muito louco", created_at: String(Date.now()), updated_at: String(Date.now()) }
-  ]
-
   return (
     <SafeAreaView style={{ justifyContent: "center", flex: 1 }}>
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-          handleComment(); // Animate background opacity when closing the modal
+          handleComment();
         }}>
         <Animated.View
           style={[
@@ -65,18 +65,17 @@ export default function Home() {
           ]}
         >
           <TouchableOpacity activeOpacity={1} style={styles.touchableOpacity} onPress={handleComment} />
-          <View style={{ height: 30, width: '100%', borderTopLeftRadius: 10, borderTopRightRadius: 10, backgroundColor: '#fff' }}>
+          <View style={{ height: 10, width: '100%', borderTopLeftRadius: 10, borderTopRightRadius: 10, backgroundColor: '#fff' }}>
           </View>
-          <View style={{ flex: 4, alignItems: "flex-end" }}>
-            {/* <CommentComponent comment={{ id: 1, user_id: 1, post_id: 1, description: "Ele é muito louco", created_at: String(Date.now()), updated_at: String(Date.now()) }} /> */}
+          <View style={{ flex: postComments.length > 5 ? 2 : 1, alignItems: "flex-end" }}>
             <FlatList
               contentContainerStyle={{
                 alignItems: "center",
-                backgroundColor: "#fff",
+                backgroundColor: "#F6F7F9",
                 width: Dimensions.get("window").width,
-                height: Dimensions.get("window").height
+                minHeight: '100%'
               }}
-              data={mockData}
+              data={postComments}
               renderItem={({ item, index }) => <CommentComponent comment={item} />}
               keyExtractor={(_, index) => index.toString()}
               onEndReached={handleEndReached}
@@ -84,9 +83,17 @@ export default function Home() {
               ListFooterComponent={renderFooter}
             />
           </View>
-            <TextInput 
-            style={{backgroundColor: '#fff', width: '100%', paddingLeft: 30, height: 50, borderTopWidth: 1}}
-            placeholder="Adicione um comentário"/>
+          <View style={{ width: '100%', alignItems: 'center', flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1 }}>
+            <TextInput
+              style={{ width: '90%', paddingLeft: 30, height: 50 }}
+              placeholder="Adicione um comentário"
+              value={commentDescription}
+              onChangeText={(e) => setCommentDescription(e)}/>
+            <TouchableOpacity
+            onPress={() => createComment(user?.id, selectedPost, commentDescription )}>
+              <FontAwesome style={{ width: 'auto' }} name="angle-double-right" size={25} />
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </Modal>
       <FlatList
@@ -95,9 +102,9 @@ export default function Home() {
           backgroundColor: "#F6F7F9",
         }}
         data={posts}
-        renderItem={({ item }) => <PostComponent handleComment={handleComment} post={item} />}
+        renderItem={({ item }) => <PostComponent handleComment={getCommentsData} post={item} />}
         keyExtractor={(_, index) => index.toString()}
-        onEndReached={handleEndReached}
+        // onEndReached={handleEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={renderFooter}
       />

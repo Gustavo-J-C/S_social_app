@@ -2,7 +2,7 @@ import axios from "axios";
 import { Platform } from "react-native";
 
 const api = axios.create({
-  baseURL: Platform.OS == "ios" ? "http://localhost:3000" : "http://10.0.2.2:3000",
+  baseURL: Platform.OS == "ios" ? "http://192.168.0.106:3000" : "http://192.168.0.106:3000",
   timeout: 5000,
 });
 

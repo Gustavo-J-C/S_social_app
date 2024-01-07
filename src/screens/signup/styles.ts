@@ -11,7 +11,7 @@ export const Form = styled.View`
   top: -55px;
   background-color: #fff;
   width: 100%;
-  padding-top: 60px;
+  padding-top: 20px;
   height: 70%;
   align-items: center;
   border-radius: 40px;
@@ -62,7 +62,7 @@ margin-bottom: 30px;
 export const ButtonContainer = styled.TouchableOpacity`
   height: 60px;
   width: 90%;
-  margin-top: 40px;
+  margin-top: 20px;
   background-color: #8487F1;
   justify-content: center;
   align-items: center;

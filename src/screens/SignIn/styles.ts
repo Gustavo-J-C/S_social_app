@@ -5,6 +5,7 @@ export const Container = styled.View`
   margin-top: 30px;
   align-items: center;
   flex: 1;
+  background-color: #fff;
   justify-content: center;
 `;
 
@@ -13,7 +14,7 @@ export const Form = styled.View`
   background-color: #fff;
   width: 100%;
   padding-top: 60px;
-  height: 70%;
+  height: 68%;
   align-items: center;
   border-radius: 40px;
 `;

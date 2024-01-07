@@ -8,13 +8,19 @@ import React, {
 } from "react";
 import { api } from "../services/api";
 import Toast from "react-native-toast-message";
-import { Post } from "../@types/posts";
 
 interface IUser {
-    id: BigInt,
+    id: number,
     name: string,
     email: string,
     image?: string
+}
+
+interface ISignUpCredentials {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
 }
 
 interface ISignInCredentials {
@@ -23,9 +29,10 @@ interface ISignInCredentials {
 }
 
 interface IAuthContextData {
-    user: IUser;
-    posts: Post[];
+    user: IUser | undefined;
+    loadingUser : boolean;
     signIn: (credentials: ISignInCredentials) => Promise<void>;
+    signUp: (credentials: ISignUpCredentials) => Promise<void>;
     signOut: () => Promise<void>;
 }
 
@@ -36,8 +43,8 @@ interface IAuthProviderProps {
 const AuthContext = createContext<IAuthContextData>({} as IAuthContextData);
 
 function AuthProvider({ children }: IAuthProviderProps) {
-    const [user, setUser] = useState<IUser>({} as IUser);
-    const [posts, setPosts] = useState<Post[]>([])
+    const [user, setUser] = useState<IUser>();
+    const [loadingUser, setLoadingUser] = useState(true);
 
     async function signIn({
         email,
@@ -48,49 +55,84 @@ function AuthProvider({ children }: IAuthProviderProps) {
                 email,
                 password,
             });
-            const responseData = response?.data?.data
-            
+            const responseData = response?.data?.data;
+
             if (responseData?.token) {
-                
                 api.defaults.headers.authorization = responseData?.token;
 
                 const dataSave = {
                     id: responseData.user.id,
                     name: responseData.user.name,
                     email,
-                }
-                
+                };
+
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
-                await AsyncStorage.setItem(
-                    "TOKEN",
-                    responseData.token
-                  );
+                await AsyncStorage.setItem("TOKEN", responseData.token);
+
                 setUser(dataSave);
                 Toast.show({
-                    type: "error",
-                    text1: "Opa",
-                    text2: "Credenciais inválidas!",
+                    type: "success",
+                    text1: "Sucesso",
+                    text2: "Login realizado com sucesso!",
                     position: "bottom",
                 });
-
             } else {
-                return;
+                throw new Error("Token not received");
             }
         } catch (error) {
             console.error(error);
-            return
+            throw error; // Lançar a exceção para ser capturada no componente SignIn
+        }
+    }
+
+    async function signUp({
+        name,
+        email,
+        password,
+        confirmPassword
+    }: ISignUpCredentials) {
+        try {
+            const response = await api.post("/auth/register", {
+                name,
+                email,
+                password,
+                confirmPassword
+            });
+
+            const responseData = response?.data?.data;
+
+            if (responseData?.token) {
+                api.defaults.headers.authorization = responseData?.token;
+
+                const dataSave = {
+                    id: responseData.user.id,
+                    name: responseData.user.name,
+                    email,
+                };
+
+                setUser(dataSave);
+                await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
+                await AsyncStorage.setItem("TOKEN", responseData.token);
+
+            } else {
+                throw new Error("Token not received");
+            }
+        } catch (error) {
+            console.error(error);
+            throw error; // Lançar a exceção para ser capturada no componente SignUp
         }
     }
 
     async function loadStorageData() {
         const userStorage = await AsyncStorage.getItem("USER");
         const tokenStorage = await AsyncStorage.getItem("TOKEN");
-    
+
         if (userStorage && tokenStorage) {
-          const userLogged = JSON.parse(userStorage) as IUser;
-          api.defaults.headers.authorization = tokenStorage;
-    
-          setUser({ ...userLogged });
+            const userLogged = JSON.parse(userStorage) as IUser;
+            api.defaults.headers.authorization = tokenStorage;
+
+            setUser({ ...userLogged });
+            setLoadingUser(false);
         }
     }
 
@@ -106,14 +148,15 @@ function AuthProvider({ children }: IAuthProviderProps) {
 
     useEffect(() => {
         loadStorageData();
-      }, []);
+    }, []);
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                posts,
+                loadingUser,
                 signIn,
+                signUp,
                 signOut
             }}
         >

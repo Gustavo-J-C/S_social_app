@@ -13,6 +13,9 @@ export type PostImage = {
 
 // Definindo o tipo para um post
 export type Post = {
+    like_count: number;
+    comment_count: number;
+    user_liked: number
     id: number;
     users_id: number;
     title: string;

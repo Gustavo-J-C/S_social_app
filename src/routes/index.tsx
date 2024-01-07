@@ -6,7 +6,7 @@ import { TabRoutes } from './tabRoutes';
 import { AuthRoutes } from './authRoutes';
 
 export function Routes() {
-  const { user } = useAuth();
+  const { user, loadingUser } = useAuth();
   
   return (
     <NavigationContainer>

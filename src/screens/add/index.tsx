@@ -108,14 +108,14 @@ export function Add({ navigation }: any) {
         } catch (error: any) {
             console.error("Erro: ", error);
             if (error.response) {
-                console.log("message: ", error.response.data.message);
-                console.log(error.response.status);
+                console.error("message: ", error.response.data.message);
+                console.error(error.response.status);
             } else if (error.request) {
-                console.log("Request: ", error.request);
+                console.error("Request: ", error.request);
             }
-            console.log("Error", error.message);
-            console.log(error.config);
-            console.log("Data: ", error.config.data.validateStatus);
+            console.error("Error", error.message);
+            console.error(error.config);
+            console.error("Data: ", error.config.data.validateStatus);
             Toast.show({
                 type: "error",
                 text1: "Opa",

@@ -1,6 +1,5 @@
-import { BackHandler, TouchableOpacity } from "react-native";
+import { BackHandler, StatusBar, TouchableOpacity, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import WelcomeImage from '../../assets/imgs/welcomeImage.png';
 import React, { useState } from "react";
@@ -18,12 +17,14 @@ import {
   IconArea,
 } from "./styles";
 import { useAuth } from "../../hooks/auth";
-
+import { isValidEmail } from "../../utils/email";
 
 export function SignIn({ navigation }: any) {
   const [emailInput, setEmailInput] = useState<string>("");
   const [passwordInput, setPasswordInput] = useState<string>("");
   const [viewPassword, setViewPassword] = useState<boolean>(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const { signIn, user } = useAuth();
 
@@ -42,19 +43,52 @@ export function SignIn({ navigation }: any) {
 
   async function handleSignIn() {
     try {
-      
-      await signIn({
+
+      setEmailError(null);
+      setPasswordError(null);
+
+      // Validar o e-mail
+      if (!emailInput.trim()) {
+        setEmailError('O e-mail é obrigatório.');
+        return;
+      }
+
+      if (!isValidEmail(emailInput)) {
+        setEmailError('O e-mail fornecido não é válido.');
+        return;
+      }
+
+      // Validar a senha
+      if (!passwordInput.trim()) {
+        setPasswordError('A senha é obrigatória.');
+        return;
+      }
+
+      const response = await signIn({
         email: emailInput,
         password: passwordInput,
       });
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+
+      // Verificar se é um erro de credenciais inválidas
+      if (error.response && error.response.status === 401) {
+        setEmailError('Credenciais inválidas. Verifique sua senha');
+      } else if (error.response && error.response.status === 404) {
+        setEmailError('Endereço de email não encontrado');
+      } else {
+        setEmailError('Erro ao tentar fazer login. Tente novamente mais tarde.');
+      }
     }
   }
 
+
   return (
     <Container>
+      <StatusBar
+        translucent
+        backgroundColor="rgba(255,255,255,0.0)"
+      />
       <Image
         source={WelcomeImage}
       />
@@ -68,6 +102,11 @@ export function SignIn({ navigation }: any) {
             autoCapitalize="none"
           />
         </TextInputContainer>
+        {emailError && (
+          <View style={{ width: '80%' }}>
+            <Text style={{ color: 'red', marginTop: 5 }}>{emailError}</Text>
+          </View>
+        )}
         <TextInputContainer>
           <TextInput
             onChangeText={(e) => setPasswordInput(e)}
@@ -80,6 +119,11 @@ export function SignIn({ navigation }: any) {
             <Feather name={viewPassword ? 'eye-off' : "eye"} size={20} onPress={() => setViewPassword(!viewPassword)} />
           </IconArea>
         </TextInputContainer>
+        {passwordError && (
+          <View style={{ width: '80%' }}>
+            <Text style={{ color: 'red', marginTop: 5 }}>{passwordError}</Text>
+          </View>
+        )}
         <TouchableOpacity>
           <ForgotPasswordLabel>ESQUECI MINHA SENHA</ForgotPasswordLabel>
         </TouchableOpacity>

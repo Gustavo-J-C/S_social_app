@@ -22,6 +22,7 @@ interface IDataContextData {
     getUserInfo: (userId: number) => Promise<any>;
     addPost: (postData: { description: string; }) => Promise<void>;
     getPostLikes: (postId: string, userId?: number | undefined) => Promise<any>;
+    getPostComments: (postId: string) => Promise<any>;
 }
 
 interface IDataProviderProps {
@@ -34,7 +35,7 @@ function DataProvider({ children }: IDataProviderProps) {
     const { user } = useAuth()
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(1); // Inicializa a página como 1
+    const [page, setPage] = useState(1);
     const [hasMorePosts, setHasMorePosts] = useState(true);
 
     const userCacheKey = "@MyApp:userCache";
@@ -45,7 +46,7 @@ function DataProvider({ children }: IDataProviderProps) {
         try {
             setLoading(true);
 
-            const response = await api.get(`/feed/posts?page=1`);
+            const response = await api.get(`/feed/posts?page=1&userId=${user?.id}`);
 
             setPosts(response.data.posts);
             setPage(2); // Incrementa a página para a próxima chamada
@@ -68,7 +69,7 @@ function DataProvider({ children }: IDataProviderProps) {
         try {
             setLoading(true);
 
-            const response = await api.get(`/feed/posts?page=${page}`);            
+            const response = await api.get(`/feed/posts?page=${page}&userId=${user?.id}`);
 
             if (response.data.posts.length > 0) {
                 setPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
@@ -97,26 +98,26 @@ function DataProvider({ children }: IDataProviderProps) {
 
     async function getPostLikes(postId: string) {
         try {
-            const response = await api.get(`/feed/post/${postId}/likes?userId=${user.id || ''}`);
+            const response = await api.get(`/feed/post/${postId}/likes?userId=${user?.id || ''}`);
 
             return response.data;
-        } catch (error) {
-            console.error(`Error fetching likes for post ${postId}:`, error);
+        } catch (error: any) {
             throw error;
         }
     }
 
     async function unlikePost(postId: string) {
         try {
-            await api.delete(`/feed/post/${postId}/like`);
+            await api.delete(`/feed/post/${postId}/unlike`);
             // Atualiza o estado local para refletir a remoção do like
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
                     String(post.id) === postId ? { ...post, likedPost: false } : post
                 )
             );
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            console.error(error.response.data);
+            throw error           
         }
     }
 
@@ -142,6 +143,16 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     };
 
+    async function getPostComments(postId: string) {
+        try {
+          const response = await api.get(`/comments/post/${postId}`);  
+          return response.data;
+        } catch (error) {
+          console.error(`Error fetching comments for post ${postId}:`, error);
+          throw error;
+        }
+      }
+
     useEffect(() => {
         // Carrega o cache de usuários ao inicializar
         const loadUserCache = async () => {
@@ -161,7 +172,7 @@ function DataProvider({ children }: IDataProviderProps) {
     }, []);
 
     useEffect(() => {
-        user && getInitialPosts();
+        user ? getInitialPosts() : false;
     }, [user]);
 
     return (
@@ -174,6 +185,7 @@ function DataProvider({ children }: IDataProviderProps) {
                 likePost,
                 unlikePost,
                 getPostLikes,
+                getPostComments,
                 getUserInfo,
                 addPost
             }}
