@@ -2,6 +2,7 @@ import { useTheme } from "styled-components/native";
 import { Controller, Control } from "react-hook-form";
 import { Container, Error, SelectInput } from "./styles";
 import { SelectList, SelectListProps } from "react-native-dropdown-select-list";
+import theme from "../../../theme";
 
 type Props = SelectListProps & {
   control: Control;
@@ -38,10 +39,10 @@ export function SelectInputForm({
             inputStyles={{
               color: COLORS.GRAY_800,
               fontSize: FONT_SIZE.MD,
-              fontFamily: FONT_FAMILY.REGULAR,
+              fontWeight: theme.FONT_WEIGHT.REGULAR,
             }}
             // {... (isNote &&  {dropdownItemStyles: { backgroundColor: COLORS.GRAY_100 } } )}
-            isError={!!error}
+            isError={error}
             ref={selectInputRef}
             {...rest}
           />

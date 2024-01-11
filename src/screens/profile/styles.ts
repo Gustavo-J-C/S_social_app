@@ -7,19 +7,19 @@ export const ImageArea = styled.TouchableOpacity`
 
 export const TextMD = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.LG}px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.MEDIUM};
+  font-weight: ${({ theme }) => theme.FONT_WEIGHT.MEDIUM},
   color: ${({ theme }) => theme.COLORS.GRAY_900};
 `;
 
 export const TextSM = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.MD}px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.LIGHT};
+  font-weight: ${({ theme }) => theme.FONT_WEIGHT.LIGHT},
   color: ${({ theme }) => theme.COLORS.GRAY_900};
 `;
 
 export const HeaderTitle = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.LG}px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.MEDIUM};
+ font-weight: 600,
   margin-top: 10px;
   color: ${({ theme }) => theme.COLORS.GRAY_800};
 `;

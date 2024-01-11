@@ -46,9 +46,7 @@ type newLandmarkFormInputs = z.infer<typeof newLandmarkFormSchema>;
 export function Add({ navigation }: any) {
     const { user } = useAuth();
     const [images, setImages] = useState<string[]>([]);
-    const [publicLandmark, setPublicLandmark] = useState("0");
     const [modalVisible, setModalVisible] = useState(false);
-    const [categories, setCategories] = useState([]);
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -71,57 +69,65 @@ export function Add({ navigation }: any) {
         },
     });
 
-    async function handleCreate(data: newLandmarkFormInputs) {
+    async function handleCreatePost(data: newLandmarkFormInputs) {
         try {
-            const formData = new FormData();
-            formData.append("user_id", user.id.toString());
+            console.log(data);
 
-            if (images.length > 0) {
-                const imageObjects = images.map((image, index) => {
-                    return {
-                        name: `image_${index}.jpg`,
-                        uri:
-                            Platform.OS === "android" ? image : image.replace("file://", ""),
-                        type: mime.getType(image),
-                    };
-                });
-
-                formData.append("images[]", JSON.stringify(imageObjects));
+            const newPost = {
+                user_id: user?.id,
+                description: data.description
             }
 
+            const response = await api.post("/feed/post", newPost);
 
-            const response = await api.post("/landmark", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            // Obter o ID do post criado
+            const postId = response.data.post.id;
+
+            // // Enviar imagens
+            await sendImages(postId);
+
+            setValue("description", "");
+            setImages([]);
+            navigation.navigate("Home");
 
             Toast.show({
                 type: "success",
                 text1: "Ponto turístico cadastrado com sucesso",
                 position: "bottom",
             });
-            setValue("description", "");
-            setImages([]);
-
-            setTimeout(() => {
-                navigation.navigate("Início");
-            }, 200);
         } catch (error: any) {
-            console.error("Erro: ", error);
-            if (error.response) {
-                console.error("message: ", error.response.data.message);
-                console.error(error.response.status);
-            } else if (error.request) {
-                console.error("Request: ", error.request);
-            }
-            console.error("Error", error.message);
-            console.error(error.config);
-            console.error("Data: ", error.config.data.validateStatus);
+            console.error("Erro ao criar post:", error);
+
             Toast.show({
                 type: "error",
                 text1: "Opa",
                 text2: "Não foi possível cadastrar",
                 position: "bottom",
             });
+        }
+    }
+
+    async function sendImages(postId: number) {
+        try {
+            for (let index = 0; index < images.length; index++) {
+                const image = images[index];
+
+                const imageObject = {
+                    name: `image_${index}.jpg`,
+                    uri: Platform.OS === "android" ? image : image.replace("file://", ""),
+                    type: mime.getType(image),
+                };
+
+                const imageFormData = new FormData();
+                imageFormData.append('file', imageObject);
+                imageFormData.append("postId", String(postId));
+
+                await api.post(`/feed/post/image`, imageFormData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+            }
+        } catch (error) {
+            console.error("Erro ao enviar imagens:", error);
         }
     }
 
@@ -142,6 +148,7 @@ export function Add({ navigation }: any) {
             return;
         }
 
+
         if (result?.assets[0]?.uri) {
             setImages([...images, result.assets[0].uri]);
         }
@@ -158,7 +165,7 @@ export function Add({ navigation }: any) {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 4],
-            quality: 1,
+            quality: 0.5,
         });
 
         if (result.canceled) {
@@ -242,13 +249,13 @@ export function Add({ navigation }: any) {
                         error={errors.description && errors.description.message}
                     />
                 </Form>
-            <FotterButton>
-                <ButtonPrimary
-                    title="SALVAR"
-                    isLoading={isSubmitting}
-                    onPress={handleSubmit(handleCreate)}
-                />
-            </FotterButton>
+                <FotterButton>
+                    <ButtonPrimary
+                        title="SALVAR"
+                        isLoading={isSubmitting}
+                        onPress={handleSubmit(handleCreatePost)}
+                    />
+                </FotterButton>
             </ScrollView>
         </Container>
     );
@@ -289,7 +296,7 @@ const styles = StyleSheet.create({
     },
     textStyle: {
         color: "white",
-        fontWeight: "bold",
+        fontWeight: theme.FONT_WEIGHT.BOLD,
         textAlign: "center",
     },
     modalText: {

@@ -141,6 +141,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             setUser({} as IUser);
             await AsyncStorage.removeItem("USER");
             await AsyncStorage.removeItem("TOKEN");
+            api.defaults.headers.authorization = null;
         } catch (error) {
             console.error(error);
         }

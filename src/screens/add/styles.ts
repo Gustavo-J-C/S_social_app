@@ -16,7 +16,7 @@ export const Header = styled.View`
 
 export const HeaderTitle = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.XL}px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.MEDIUM};
+  font-weight: ${({ theme }) => theme.FONT_WEIGHT.MEDIUM};
   color: ${({ theme }) => theme.COLORS.GRAY_800};
 `;
 

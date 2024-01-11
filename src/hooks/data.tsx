@@ -18,11 +18,11 @@ interface IDataContextData {
     hasMorePosts: boolean;
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
-    unlikePost: (postId: string) => Promise<void>;
+    unlikePost: (postId: number) => Promise<void>;
     getUserInfo: (userId: number) => Promise<any>;
     addPost: (postData: { description: string; }) => Promise<void>;
     getPostLikes: (postId: string, userId?: number | undefined) => Promise<any>;
-    getPostComments: (postId: string) => Promise<any>;
+    getPostComments: (postId: number) => Promise<any>;
 }
 
 interface IDataProviderProps {
@@ -106,17 +106,17 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     }
 
-    async function unlikePost(postId: string) {
+    async function unlikePost(postId: number) {
         try {
-            await api.delete(`/feed/post/${postId}/unlike`);
+            const reponse = await api.delete(`/feed/post/${postId}/unlike`);
             // Atualiza o estado local para refletir a remoção do like
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
-                    String(post.id) === postId ? { ...post, likedPost: false } : post
+                    post.id === postId ? { ...post, likedPost: false } : post
                 )
             );
         } catch (error: any) {
-            console.error(error.response.data);
+            console.error(error);
             throw error           
         }
     }
@@ -143,10 +143,10 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     };
 
-    async function getPostComments(postId: string) {
+    async function getPostComments(postId: number) {
         try {
           const response = await api.get(`/comments/post/${postId}`);  
-          return response.data;
+          return response.data.data;
         } catch (error) {
           console.error(`Error fetching comments for post ${postId}:`, error);
           throw error;

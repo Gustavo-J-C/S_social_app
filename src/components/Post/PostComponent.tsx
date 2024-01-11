@@ -12,7 +12,7 @@ const baseUri = "http://192.168.0.106:3000";
 
 type PropType = {
     post: Post
-    handleComment: (postId: string) => void,
+    handleComment: (postId: number) => void,
 }
 
 type StylesType = {
@@ -80,6 +80,7 @@ export default function PostComponent({ post, handleComment }: PropType) {
     const [liked, setLiked] = useState(post.user_liked ? true : false);
     const [likes, setLikes] = useState<number>(post.like_count);
 
+    
     const timePassed = checkTimePassed(post.created_at);
     const { likePost, unlikePost, getUserInfo, getPostLikes } = useData();
 
@@ -100,15 +101,17 @@ export default function PostComponent({ post, handleComment }: PropType) {
 
     const handleToggleLike = async () => {
         try {
+
             if (liked) {
-                await unlikePost(String(post.id));
+                const response = await unlikePost(post.id);
                 setLiked(false);
-                setLikes(likes - 1);
+                setLikes((prev) => (likes - 1));
             } else {
                 await likePost(String(post.id));
                 setLiked(true);
                 setLikes(likes + 1);
             }
+            
         } catch (error) {
             console.error(error);
         }
@@ -129,10 +132,10 @@ export default function PostComponent({ post, handleComment }: PropType) {
                     <Feather name="plus-circle" size={25} color={theme.COLORS.PRIMARY} />
                 </View>
                 <View style={styles.actionsGroup}>
-                    <View style={styles.actionItem}>
+                    <TouchableOpacity style={styles.actionItem}>
                         <Text>{post.comment_count}</Text>
-                        <FontAwesome name="commenting-o" onPress={() => handleComment(String(post.id))} size={25} color={theme.COLORS.PRIMARY} />
-                    </View>
+                        <FontAwesome name="commenting-o" onPress={() => {handleComment(post.id)}} size={25} color={theme.COLORS.PRIMARY} />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={handleToggleLike} style={styles.actionItem}>
                         <Text>{likes}</Text>
                         <FontAwesome name={liked ? "heart" : "heart-o"} size={25} color={liked ? "red" : theme.COLORS.PRIMARY} />

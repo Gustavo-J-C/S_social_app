@@ -19,7 +19,7 @@ export const Container = styled(TouchableOpacity)<ButtonProps>`
 export const Title = styled.Text`
   color: ${({ theme }) => theme.COLORS.WHITE};
   font-size: ${({ theme }) => theme.FONT_SIZE.MD}px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
+  font-weight: ${({ theme }) => theme.FONT_WEIGHT.BOLD};
 `;
 
 export const Loading = styled.ActivityIndicator.attrs(({ theme }) => ({

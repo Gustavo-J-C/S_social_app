@@ -15,12 +15,14 @@ type StylesType = {
     container: ViewStyle;
     header: ViewStyle;
     username: TextStyle;
+    timePassed: TextStyle;
+    description: TextStyle;
     timestamp: ViewStyle;
     image: ImageStyle;
     actionsContainer: ViewStyle;
-    description: ViewStyle;
     actionsGroup: ViewStyle;
     actionItem: ViewStyle;
+    actionItens: ViewStyle;
 };
 
 const styles: StylesType = {
@@ -28,6 +30,8 @@ const styles: StylesType = {
         width: Dimensions.get("window").width * 0.9,
         backgroundColor: "#fff",
         borderRadius: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
         marginTop: 20,
     },
     header: {
@@ -37,8 +41,9 @@ const styles: StylesType = {
         alignItems: "center",
     },
     username: {
-        marginLeft: 20,
-        fontSize: 11
+        fontSize: theme.FONT_SIZE.MD,
+        color: theme.TEXT.BLACK,
+        fontWeight: theme.FONT_WEIGHT.BOLD
     },
     timestamp: {
         marginRight: 20,
@@ -55,12 +60,17 @@ const styles: StylesType = {
         height: 30,
     },
     description: {
-        marginLeft: 20,
-
+        color: theme.COLORS.BLACK,
+        fontSize: theme.FONT_SIZE.SM
+    },
+    timePassed: {
+        color: theme.TEXT.SECONDARY,
+        fontSize: theme.FONT_SIZE.XS
     },
     actionsGroup: {
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems: 'baseline',
         marginRight: 5,
         gap: 20,
     },
@@ -69,6 +79,13 @@ const styles: StylesType = {
         alignItems: "baseline",
         gap: 5,
     },
+    actionItens: {
+        flexDirection: "row",
+        flex: 1,
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        gap: 5,
+    }
 };
 
 
@@ -76,7 +93,9 @@ export default function CommentComponent({ comment }: PropType) {
     const [liked, setLiked] = useState(false);
     const [likes, setLikes] = useState<number>(0);
 
-    // const timePassed = checkTimePassed(comment.created_at);
+
+    
+    const timePassed = checkTimePassed(comment.created_at);
     const { likePost, unlikePost, getUserInfo, getPostLikes } = useData();
 
     const [username, setUsername] = useState("");
@@ -94,21 +113,21 @@ export default function CommentComponent({ comment }: PropType) {
         fetchUserInfo();
     }, [comment.user_id]);
 
-    useEffect(() => {
-        const fetchPostLikes = async () => {
-            try {
-                const likes = await getPostLikes(String(comment.id));
+    // useEffect(() => {
+    //     const fetchPostLikes = async () => {
+    //         try {
+    //             const likes = await getPostLikes(String(comment.id));
 
-                // Atualiza o estado de liked e a quantidade de likes
-                setLiked(likes.likedPost);
-                setLikes(likes.likes.length);
-            } catch (error) {
-                console.error("Error fetching comment likes:", error);
-            }
-        };
+    //             // Atualiza o estado de liked e a quantidade de likes
+    //             setLiked(likes.likedPost);
+    //             setLikes(likes.likes.length);
+    //         } catch (error) {
+    //             console.error("Error fetching comment likes:", error);
+    //         }
+    //     };
 
-        fetchPostLikes();
-    }, [comment.id, getPostLikes]);
+    //     fetchPostLikes();
+    // }, [comment.id, getPostLikes]);
 
     const handleToggleLike = async () => {
         try {
@@ -127,22 +146,24 @@ export default function CommentComponent({ comment }: PropType) {
             console.error(error);
         }
     };
-    
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
             </View>
             <View style={styles.actionsContainer}>
-                <View style={styles.description}>
-                    <Text>{comment.description}</Text>
-                </View>
-                <View style={styles.actionsGroup}>
-                    <TouchableOpacity onPress={handleToggleLike} style={styles.actionItem}>
-                        <Text>{likes}</Text>
+                <Text style={styles.description}>{comment.description}</Text>
+            </View>
+            <View style={styles.actionsGroup}>
+                <Text style={styles.timePassed}>{timePassed}</Text>
+                {/* <TouchableOpacity onPress={handleToggleLike} style={styles.actionItens}>
+                    <Text>Like</Text>
+                    <View style={{ flexDirection: 'row', gap: 5 }}>
+                        <Text>2</Text>
                         <FontAwesome name={liked ? "heart" : "heart-o"} size={20} color={liked ? "red" : theme.COLORS.PRIMARY} />
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                </TouchableOpacity> */}
             </View>
         </View>
     );

@@ -22,7 +22,7 @@ export const Input = styled(TextInput)<InputProps>`
   ${({ theme }) => css`
     color: ${theme.COLORS.GRAY_800};
     background-color: ${theme.COLORS.GRAY_100};
-    font-family: ${theme.FONT_FAMILY.REGULAR};
+    font-weight: ${theme.FONT_WEIGHT.REGULAR};
     font-size: ${theme.FONT_SIZE.MD}px;
   `};
 `;

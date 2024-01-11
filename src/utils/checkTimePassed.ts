@@ -2,20 +2,24 @@ import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 export default function checkTimePassed(time: string) {
-    const createdDate = new Date(time);
-    const formattedDate = format(createdDate, 'dd/MM/yyyy HH:mm', { locale: ptBR });
-    const timeAgo = formatDistanceToNow(createdDate, { locale: ptBR });
+    try {
+        const createdDate = new Date(time);
+        
+        const timeAgo = formatDistanceToNow(createdDate, { locale: ptBR });
+        
+        let timeAgoText = '';
 
-    let timeAgoText = '';
+        if (isToday(createdDate)) {
+            timeAgoText = `${timeAgo} atrás`;
+        } else if (isYesterday(createdDate)) {
+            timeAgoText = `ontem`;
+        } else {
+            timeAgoText = `${timeAgo} atrás`;
+        }
 
-    if (isToday(createdDate)) {
-        const splitedText = timeAgo.split(' ')
-        timeAgoText = `${splitedText[2]} ${splitedText[3]} atrás`;
-    } else if (isYesterday(createdDate)) {
-        timeAgoText = `ontem`;
-    } else {
-        timeAgoText = `${timeAgo} atrás`;
+        return timeAgoText;
+    } catch (error) {
+        console.error('Error parsing date:');
+        return 'Data inválida';
     }
-
-    return timeAgoText
 }

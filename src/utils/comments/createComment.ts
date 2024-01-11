@@ -1,15 +1,15 @@
 import { api } from "../../services/api"
 
-export const createComment = async (userId: number, postId: string, description: string) => {
+export const createComment = async (userId: number, postId: number, description: string) => {
     try {
         const response = await api.post('/comments/create', {
-            userId,
+            user_id: userId,
             postId,
             description
         })
-        console.log(response);
+        return response.data
         
     } catch (error: any) {
-        console.error(error);
+        console.error(error.response.data);
     }
 }

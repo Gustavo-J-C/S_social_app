@@ -10,7 +10,7 @@ export const Container = styled.View`
   margin: 5px 0;
 `;
 
-export const SelectInput = styled(SelectList)<SelectDropdownProps>`
+export const SelectInput = styled(SelectList) <SelectDropdownProps>`
   /* border-width: 1px;
   border-color: ${({ isError, theme }) =>
     isError ? theme.COLORS.ATTENTION : theme.COLORS.WHITE};
@@ -22,7 +22,7 @@ export const SelectInput = styled(SelectList)<SelectDropdownProps>`
   ${({ theme }) => css`
     color: ${theme.COLORS.GRAY_800};
     background-color: ${theme.COLORS.GRAY_100};
-    font-family: ${theme.FONT_FAMILY.REGULAR};
+    font-weight: ${theme.FONT_WEIGHT.REGULAR};
     font-size: ${theme.FONT_SIZE.MD}px;
   `}; */
 `;

@@ -7,35 +7,73 @@ import PostComponent from "../../components/Post/PostComponent";
 import { useData } from "../../hooks/data";
 import CommentComponent from "../../components/Comment/CommentComponent";
 import { useAuth } from "../../hooks/auth";
+import { Post } from "../../@types/posts";
+import { Comment } from "../../@types/comments";
+import theme from "../../theme";
 
 export default function Home() {
   const { posts, getPosts, loading, hasMorePosts, getPostComments } = useData();
 
-  let selectedPost: null | string = null;
-  const [postComments, setPostComments] = useState([]);
+  const [currentPosts, setCurrentPosts] = useState<Post[]>(posts);
+  const [selectedPostId, setSelectedPostId] = useState<number>();
+  const [postComments, setPostComments] = useState<Comment[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentDescription, setCommentDescription] = useState("");
   const fadeAnimation = new Animated.Value(1);
 
   const {user} = useAuth();
-  const getCommentsData = async (postId: string) => {
-    selectedPost = postId
+
+  useEffect(() => {
+    setCurrentPosts(posts)
+  }, [posts])
+
+  const getCommentsData = async (postId: number) => {
     const newComments = await getPostComments(postId)
-    setPostComments(newComments)
+    
+    setPostComments(newComments.comments)
+    setSelectedPostId(postId);
     handleComment();
   }
 
+  const handleCreateComment = async () => {
+    if (user?.id === undefined || selectedPostId === undefined) {
+      console.error('user?.id or selectedPostId is undefined');
+      return;
+    }
+  
+    try {
+      const { data } = await createComment(user?.id, selectedPostId, commentDescription);
+      
+      const updatedPosts = currentPosts.map((element) => {
+        if (element.id === selectedPostId) {
+          element.comment_count++;
+        }
+        return element;
+      });
+  
+      setCurrentPosts(updatedPosts);
+      setPostComments((prevComments) => [...prevComments, data]);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      // Handle the error according to your application's needs
+    }
+  };
+  
+
   const handleComment = async () => {
-    Animated.timing(fadeAnimation, {
-      toValue: modalVisible ? 0 : 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => setModalVisible(!modalVisible));
+    try {
+        setModalVisible(!modalVisible);
+        if (modalVisible) {
+          setPostComments([])
+          setCommentDescription("")
+        }
+    } catch (error) {
+      console.error('Error handling comment:', error);
+    }
   };
 
-
   const handleEndReached = () => {
-    if (hasMorePosts && !loading) {
+    if (!loading) {
       getPosts(); 
     }
   };
@@ -53,15 +91,15 @@ export default function Home() {
         onRequestClose={() => {
           handleComment();
         }}>
-        <Animated.View
+        <View
           style={[
             styles.centeredView,
-            {
-              backgroundColor: fadeAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["rgba(52, 52, 52, 0)", "rgba(52, 52, 52, 0.8)"],
-              }),
-            },
+            // {
+            //   backgroundColor: fadeAnimation.interpolate({
+            //     inputRange: [0, 1],
+            //     outputRange: ["rgba(52, 52, 52, 0)", "rgba(52, 52, 52, 0.8)"],
+            //   }),
+            // },
           ]}
         >
           <TouchableOpacity activeOpacity={1} style={styles.touchableOpacity} onPress={handleComment} />
@@ -78,8 +116,8 @@ export default function Home() {
               data={postComments}
               renderItem={({ item, index }) => <CommentComponent comment={item} />}
               keyExtractor={(_, index) => index.toString()}
-              onEndReached={handleEndReached}
-              onEndReachedThreshold={0.1}
+              // onEndReached={handleEndReached}
+              // onEndReachedThreshold={0.1}
               ListFooterComponent={renderFooter}
             />
           </View>
@@ -90,21 +128,21 @@ export default function Home() {
               value={commentDescription}
               onChangeText={(e) => setCommentDescription(e)}/>
             <TouchableOpacity
-            onPress={() => createComment(user?.id, selectedPost, commentDescription )}>
+            onPress={handleCreateComment}>
               <FontAwesome style={{ width: 'auto' }} name="angle-double-right" size={25} />
             </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
       </Modal>
       <FlatList
         contentContainerStyle={{
           alignItems: "center",
           backgroundColor: "#F6F7F9",
         }}
-        data={posts}
+        data={currentPosts}
         renderItem={({ item }) => <PostComponent handleComment={getCommentsData} post={item} />}
         keyExtractor={(_, index) => index.toString()}
-        // onEndReached={handleEndReached}
+        onEndReached={handleEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={renderFooter}
       />
@@ -137,7 +175,7 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: theme.FONT_WEIGHT.BOLD,
     textAlign: 'center',
   },
   modalText: {
