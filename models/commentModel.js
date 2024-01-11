@@ -23,14 +23,16 @@ const Comment = sequelize.define('comments', {
   },
   created_at: {
     type: Sequelize.DATE,
-    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-    allowNull: false,
+    allowNull: true,
+  },
+  updated_at: {
+    type: Sequelize.DATE,
   },
   deleted_at: {
     type: Sequelize.DATE,
   },
 }, {
-  timestamps: false,
+  timestamps: false, // Esta opção adiciona os campos createdAt e updatedAt automaticamenteti
 });
 
 Comment.hasMany(CommentLike, { foreignKey: 'comments_id' });

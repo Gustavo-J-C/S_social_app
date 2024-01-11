@@ -14,17 +14,13 @@ const Post = sequelize.define('posts', {
     type: Sequelize.BIGINT,
     allowNull: false,
   },
-  title: {
-    type: Sequelize.STRING(255),
-    allowNull: false,
-  },
   description: {
     type: Sequelize.TEXT,
     allowNull: false,
   },
   created_at: {
     type: Sequelize.DATE,
-    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+    defaultValue: Sequelize.NOW,
     allowNull: false,
   },
   deleted_at: {

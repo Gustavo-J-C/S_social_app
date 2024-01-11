@@ -2,7 +2,7 @@ const Comment = require('../models/commentModel');
 
 exports.createComment = async function(req, res) {
     try {
-        const postId = req.body.post_id; // Obtém o postId do corpo da solicitação
+        const postId = req.body.postId; // Obtém o postId do corpo da solicitação
         const user_id = req.user.userId;
 
         // Verifica se o postId foi fornecido
@@ -16,8 +16,9 @@ exports.createComment = async function(req, res) {
             post_id: postId,
             description: req.body.description,
         });
+        console.log(newComment);
 
-        res.status(201).json(newComment);
+        res.status(201).json({message:"comment created succefully", data: newComment});
     } catch (error) {
         console.error('Erro ao criar um novo comentário:', error);
         res.status(500).json({ message: 'Erro ao criar um novo comentário.' });
@@ -33,6 +34,8 @@ exports.getPostComments = async function (req, res) {
                 post_id: postId,
             },
         });
+
+        console.log(comments)
 
         res.status(200).json({
             data: {

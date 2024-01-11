@@ -10,7 +10,7 @@ routes.get('/posts', feedController.getPosts)
 routes.delete('/post/:id', feedController.deletePost)
 
 routes.post('/post', authenticateToken, feedController.createPost)
-routes.post('/post/images', authenticateToken, multer(multerConfig).single('file'), feedController.uploadPostImages);
+routes.post('/post/image', authenticateToken, multer(multerConfig).single('file'), feedController.uploadPostImages);
 
 routes.post('/post/:postId/like', authenticateToken, feedController.likePost);
 routes.delete('/post/:postId/unlike', authenticateToken, feedController.unlikePost);

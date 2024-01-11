@@ -5,6 +5,7 @@ const sequelize = new Sequelize(
   host: process.env.MYSQL_HOST,
   dialect: 'mysql',
   port: process.env.MYSQL_PORT,
+  define: { timestamps: false }
 });
 
 // Testar a conexão com o banco de dados

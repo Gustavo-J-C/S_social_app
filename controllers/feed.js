@@ -5,10 +5,10 @@ const Comment = require('../models/commentModel');
 
 exports.getPosts = async function (req, res) {
     try {
-        
+
         const userId = req.query.userId | null;
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
+        const pageSize = parseInt(req.query.pageSize) || 6;
 
         console.log(req.params);
 
@@ -59,14 +59,15 @@ exports.deletePost = async function (req, res) {
 };
 
 exports.createPost = async function (req, res) {
-    const { title, description } = req.body;
+    const { description } = req.body;
 
+    console.log(req.body);
+    console.log(req.user);
     try {
         // Crie o post no banco de dados usando o modelo Post
         const createdPost = await Post.create({
-            title: title,
             description: description,
-            users_id: req.user.id, // Use o ID do usuário atual
+            users_id: req.user.userId,
         });
 
         res.status(201).json({
@@ -106,8 +107,13 @@ exports.uploadPostImages = async function (req, res) {
             image: createdImage,
         });
     } catch (error) {
-        console.error('Error uploading image:', error);
-        res.status(500).json({ message: 'Error uploading image' });
+        if (error instanceof multer.MulterError) {
+            // Erro de Multer (por exemplo, tamanho de arquivo excedido)
+            return res.status(400).json({ message: 'File size limit exceeded' });
+        } else {
+            console.error('Error uploading image:', error);
+            res.status(500).json({ message: 'Error uploading image' });
+        }
     }
 };
 
