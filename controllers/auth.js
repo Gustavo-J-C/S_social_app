@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Para gerar tokens JWT
 const User = require('../models/UserModel'); // Importe o modelo de usuário
 
-exports.register = async function (req, res, next) {
+const register = async function (req, res, next) {
   try {
     const { name, email, password, confirmPassword } = req.body;
 
@@ -25,12 +25,13 @@ exports.register = async function (req, res, next) {
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ userId: newUser.id }, process.env.JWT_SECRET_KEY, { expiresIn: '2h' });
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.status(201).json({ 
       data: {
         message: 'User registered successfully',
-        token: token,
+        token: accessToken,
+        refreshToken,
         user: {
           id: newUser.id,
           name: newUser.name,
@@ -44,8 +45,8 @@ exports.register = async function (req, res, next) {
   }
 };
 
-// Função de login com validação de senha
-exports.login = async function (req, res, next) {
+
+const login = async function (req, res, next) {
   try {
     const { email, password } = req.body;
 
@@ -63,13 +64,13 @@ exports.login = async function (req, res, next) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Se as credenciais estiverem corretas, gere um token JWT para autenticação
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: '2h' });
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.status(200).json({
       data: {
         message: 'Login successful',
-        token: token,
+        token: accessToken, 
+        refreshToken,
         user: {
           id: user.id,
           name: user.name,
@@ -82,3 +83,43 @@ exports.login = async function (req, res, next) {
     res.status(500).json({ message: 'Error logging in' });
   }
 };
+
+const refreshToken = async (req, res ) => {
+  const refresh_token = req.headers["refresh_token"] || "";
+  if (!refresh_token) {
+    return res.status(401).send({ message: "Invalid refresh token" });
+  }
+
+  try {
+    const decodedRefreshToken = jwt.verify(refresh_token, process.env.JWT_REFRESH_KEY)
+
+    if (!decodedRefreshToken) {
+      return res.status(401).send({ message: "Invalid or expired refresh token" });
+    }
+
+    const user = await User.findByPk(decodedRefreshToken.userId );
+
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ message: error });
+  }
+};
+
+const generateTokens = (user) => {
+  const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+  const refreshToken = jwt.sign({ userId: user.id }, process.env.JWT_REFRESH_KEY, { expiresIn: '7d' });
+  return { accessToken, refreshToken };
+}
+
+module.exports = {
+  generateTokens,
+  login,
+  register,
+  refreshToken
+}

@@ -7,7 +7,10 @@ const authenticateToken = require('../middlewares/authMiddleware');
 
 routes.get('/posts', feedController.getPosts)
 
+routes.get('/post/:postId', feedController.getPost)
 routes.delete('/post/:id', feedController.deletePost)
+
+routes.get('/user/:userId/posts', authenticateToken, feedController.getUserPosts);
 
 routes.post('/post', authenticateToken, feedController.createPost)
 routes.post('/post/image', authenticateToken, multer(multerConfig).single('file'), feedController.uploadPostImages);

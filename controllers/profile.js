@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/UserModel');
 const Follower = require('../models/followerModel');
+const Post = require('../models/PostModel');
 // const  User, Followers = require('../models'); // Importe os modelos
 
 // Rota para exibir o perfil do usuário
@@ -25,6 +26,79 @@ exports.getProfile = async function (req, res) {
     } catch (error) {
         console.error('Erro ao buscar perfil de usuário:', error);
         res.status(500).json({ message: 'Erro ao buscar perfil de usuário' });
+    }
+};
+
+exports.getProfileSumary = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Retrieve user details
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Retrieve followers
+        const followers = await Follower.findAll({
+            where: { users_followed_id: userId },
+            include: [{ model: User, as: 'followerUser' }],
+        });
+
+
+        const followerUsers =  {
+            count: followers.length,
+            data: followers.map((entry) => ({
+                id: entry.followerUser.id,
+                name: entry.followerUser.name,
+                email: entry.followerUser.email,
+            }))
+        }
+
+        // Retrieve following
+        const following = await Follower.findAll({
+            where: { user_follower_id: userId },
+            include: [{ model: User, as: 'followingUser' }],
+        });
+
+        const followingUsers = {
+            count: following.length,
+            data: following.map((entry) => ({
+                id: entry.followingUser.id,
+                name: entry.followingUser.name,
+                email: entry.followingUser.email,
+            }))
+        }
+
+        // Retrieve posts with images
+        const posts = await Post.scope(['withLikeCount', 'withCommentCount', { method: ['withLikeByUser', userId] }])
+            .findAll({
+                where: { users_id: userId },
+                include: ['post_images'],
+                order: [['created_at', 'DESC']],
+            });
+
+        const userPosts = posts.map((post) => ({
+            id: post.id,
+            content: post.content,
+            images: post.post_images,
+        }));
+
+        // Build summary object
+        const summary = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            followers: followerUsers,
+            following: followingUsers,
+            posts
+        };
+
+        return res.json({ message: 'User summary fetched successfully', data: summary });
+    } catch (error) {
+        console.error('Error fetching user summary:', error);
+        res.status(500).json({ message: 'Error fetching user summary' });
     }
 };
 
@@ -54,12 +128,12 @@ exports.editProfile = async function (req, res) {
     }
 };
 
-exports.getFollowing = async function(req, res) {
+exports.getFollowing = async function (req, res) {
     try {
         const userId = req.params.userId;
 
         const following = await Follower.findAll({
-            where: { user_follower_id: userId }, 
+            where: { user_follower_id: userId },
             include: [{ model: User, as: 'followingUser' }],
         });
 
@@ -67,7 +141,7 @@ exports.getFollowing = async function(req, res) {
             const { id, name, email } = entry.followingUser
             return {
                 id,
-                name, 
+                name,
                 email
             }
         });
@@ -87,7 +161,7 @@ exports.getFollowers = async function (req, res) {
         const userId = req.params.userId;
 
         const followers = await Follower.findAll({
-            where: { users_followed_id: userId }, 
+            where: { users_followed_id: userId },
             include: [{ model: User, as: 'followerUser' }],
         });
 
@@ -95,7 +169,7 @@ exports.getFollowers = async function (req, res) {
             const { id, name, email } = entry.followerUser
             return {
                 id,
-                name, 
+                name,
                 email
             }
         });

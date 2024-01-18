@@ -6,6 +6,7 @@ const authenticateToken = require('../middlewares/authMiddleware');
 routes.get('/:userId', profileController.getProfile);
 
 routes.patch('/:userId', authenticateToken, profileController.editProfile);
+routes.get('/:userId/summary', profileController.getProfileSumary);
 
 routes.get('/:userId/following', profileController.getFollowing);
 routes.get('/:userId/followers', profileController.getFollowers);

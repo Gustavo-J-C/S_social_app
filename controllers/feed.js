@@ -29,6 +29,44 @@ exports.getPosts = async function (req, res) {
     }
 };
 
+exports.getPost = async function (req, res) {
+    try {
+        const postId = req.params.postId || ""
+
+        const post = await Post.findByPk(postId, {
+            include: [PostImage],
+            order: [['created_at', 'DESC']],
+        })
+
+        res.send({
+            message: "Post fetched successfully", data: { post }
+        })
+    } catch (error) {
+        res.status(500).send({ error: error })
+    }
+}
+
+exports.getUserPosts = async function (req, res) {
+    try {
+
+        const userId = req.params.userId;
+
+        const posts = await Post.scope(['withLikeCount', 'withCommentCount', { method: ['withLikeByUser', userId] }]).findAll({
+            include: [PostImage],
+            where: {
+                users_id: userId
+            },
+            order: [['created_at', 'DESC']],
+            userId
+        })
+
+        res.json({ message: "user posts sucessfuly fetched", data: { posts: posts } });
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        res.status(500).json({ message: 'Error fetching posts' });
+    }
+};
+
 exports.deletePost = async function (req, res) {
     try {
         const postId = req.params.id;
@@ -104,7 +142,9 @@ exports.uploadPostImages = async function (req, res) {
 
         res.status(201).json({
             message: 'Image uploaded successfully',
-            image: createdImage,
+            data: {
+                image: createdImage,
+            }
         });
     } catch (error) {
         if (error instanceof multer.MulterError) {

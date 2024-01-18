@@ -5,6 +5,7 @@ const express = require('express');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 const profileRoutes = require('./routes/profile');
 const commentRoutes = require('./routes/comment');
 const morgan = require('morgan');
@@ -25,6 +26,7 @@ app.use('/files', express.static(path.resolve(__dirname, 'tmp', 'uploads')));
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
 app.use('/profile', profileRoutes);
 app.use('/comments', commentRoutes);
 
