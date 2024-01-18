@@ -96,7 +96,7 @@ export default function CommentComponent({ comment }: PropType) {
 
     
     const timePassed = checkTimePassed(comment.created_at);
-    const { likePost, unlikePost, getUserInfo, getPostLikes } = useData();
+    const { likePost, unlikePost, getUserInfo } = useData();
 
     const [username, setUsername] = useState("");
 
@@ -113,40 +113,6 @@ export default function CommentComponent({ comment }: PropType) {
         fetchUserInfo();
     }, [comment.user_id]);
 
-    // useEffect(() => {
-    //     const fetchPostLikes = async () => {
-    //         try {
-    //             const likes = await getPostLikes(String(comment.id));
-
-    //             // Atualiza o estado de liked e a quantidade de likes
-    //             setLiked(likes.likedPost);
-    //             setLikes(likes.likes.length);
-    //         } catch (error) {
-    //             console.error("Error fetching comment likes:", error);
-    //         }
-    //     };
-
-    //     fetchPostLikes();
-    // }, [comment.id, getPostLikes]);
-
-    const handleToggleLike = async () => {
-        try {
-            if (liked) {
-                // Se já curtiu, então descurte
-                await unlikePost(String(comment.id));
-                setLiked(false);
-                setLikes(likes - 1);
-            } else {
-                // Se não curtiu, então curte
-                await likePost(String(comment.id));
-                setLiked(true);
-                setLikes(likes + 1);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -157,13 +123,6 @@ export default function CommentComponent({ comment }: PropType) {
             </View>
             <View style={styles.actionsGroup}>
                 <Text style={styles.timePassed}>{timePassed}</Text>
-                {/* <TouchableOpacity onPress={handleToggleLike} style={styles.actionItens}>
-                    <Text>Like</Text>
-                    <View style={{ flexDirection: 'row', gap: 5 }}>
-                        <Text>2</Text>
-                        <FontAwesome name={liked ? "heart" : "heart-o"} size={20} color={liked ? "red" : theme.COLORS.PRIMARY} />
-                    </View>
-                </TouchableOpacity> */}
             </View>
         </View>
     );

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesome, Feather } from "@expo/vector-icons";
-import { Dimensions, Image, ImageStyle, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, Image, ImageStyle, NativeScrollEvent, NativeSyntheticEvent, Text, TouchableOpacity, View } from "react-native";
 import { Post } from '../../@types/posts'
-import { ViewStyle, FlexAlignType } from "react-native";
+import { ViewStyle } from "react-native";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
-import { string } from "zod";
 
 const baseUri = "http://192.168.0.106:3000";
 
@@ -14,6 +13,8 @@ type PropType = {
     post: Post
     handleComment: (postId: number) => void,
 }
+
+const windowWidth = Dimensions.get('window').width;
 
 type StylesType = {
     container: ViewStyle;
@@ -25,6 +26,7 @@ type StylesType = {
     plusIcon: ViewStyle;
     actionsGroup: ViewStyle;
     actionItem: ViewStyle;
+    emptyImage: ImageStyle;
 };
 
 const styles: StylesType = {
@@ -71,20 +73,25 @@ const styles: StylesType = {
         alignItems: "baseline",
         gap: 5,
     },
+    emptyImage: {
+        height: windowWidth,
+        width: 350,
+    }
 };
-
 
 export default function PostComponent({ post, handleComment }: PropType) {
     const images = post.post_images;
-    
+
     const [liked, setLiked] = useState(post.user_liked ? true : false);
     const [likes, setLikes] = useState<number>(post.like_count);
+    const [currentImage, setCurrentImage] = useState(1)
 
-    
+
     const timePassed = checkTimePassed(post.created_at);
-    const { likePost, unlikePost, getUserInfo, getPostLikes } = useData();
+    const { likePost, unlikePost, getUserInfo } = useData();
 
     const [username, setUsername] = useState("");
+
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -111,22 +118,47 @@ export default function PostComponent({ post, handleComment }: PropType) {
                 setLiked(true);
                 setLikes(likes + 1);
             }
-            
+
         } catch (error) {
-            console.error(error);
+            console.error(error.response);
         }
     };
-    
+
+    const calculateCurrentImage = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const contentOffset = event.nativeEvent.contentOffset.x;
+        const imageWidth = Dimensions.get("window").width * 0.9;
+        const index = Math.floor(contentOffset / imageWidth) + 1;
+        setCurrentImage(index);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
                 <Text style={styles.timestamp}>{timePassed}</Text>
             </View>
-            {images && images.length > 0 && <Image
-                style={styles.image}
-                source={{ uri: images[0]?.url?.replace("http://localhost:3000", baseUri) }}
-                onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />}
+            {images?.length > 1 &&
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'absolute', top: 45, paddingVertical: 7, zIndex: 1, justifyContent: 'center', left: '80%',  paddingHorizontal: 8, borderRadius: 25, backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
+                    <Text style={{ fontWeight: theme.FONT_WEIGHT.LIGHT, fontSize: 10, color: 'white' }}>{currentImage} / {images.length}</Text>
+                </View>
+            }
+            <FlatList
+                data={images}
+                horizontal={true}
+                keyExtractor={(item) => String(item.id)}
+                // ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+                onScroll={(event) => calculateCurrentImage(event)}
+                viewabilityConfig={{
+                    itemVisiblePercentThreshold: 80
+                }}
+                ListEmptyComponent={<View style={styles.emptyImage}></View>}
+                renderItem={({ item }) =>
+                    <Image
+                        style={styles.image}
+                        source={{ uri: item?.url?.replace("http://localhost:3000", baseUri) }}
+                        onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
+                }
+            />
             <View style={styles.actionsContainer}>
                 <View style={styles.plusIcon}>
                     <Feather name="plus-circle" size={25} color={theme.COLORS.PRIMARY} />
@@ -134,7 +166,7 @@ export default function PostComponent({ post, handleComment }: PropType) {
                 <View style={styles.actionsGroup}>
                     <TouchableOpacity style={styles.actionItem}>
                         <Text>{post.comment_count}</Text>
-                        <FontAwesome name="commenting-o" onPress={() => {handleComment(post.id)}} size={25} color={theme.COLORS.PRIMARY} />
+                        <FontAwesome name="commenting-o" onPress={() => { handleComment(post.id) }} size={25} color={theme.COLORS.PRIMARY} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleToggleLike} style={styles.actionItem}>
                         <Text>{likes}</Text>

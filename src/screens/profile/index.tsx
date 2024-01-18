@@ -13,7 +13,7 @@ const baseUri = "http://192.168.0.106:3000";
 export default function Profile({ navigation }: any) {
 
     const { signOut, user } = useAuth()
-    const { posts } = useData()
+    const { userPosts } = useData()
 
     return (
         <Container style={styles.container}>
@@ -26,15 +26,15 @@ export default function Profile({ navigation }: any) {
                         />
                     </ImageArea>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>9</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userPosts.length}</Text>
                         <Text>Publicações</Text>
                     </View>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>700</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>0</Text>
                         <Text>seguidores</Text>
                     </View>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>452</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>0</Text>
                         <Text>Seguindo</Text>
                     </View>
                 </View>
@@ -56,7 +56,7 @@ export default function Profile({ navigation }: any) {
                 </TouchableOpacity>
             </View>
             <FlatList
-                data={posts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
+                data={userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 renderItem={({ item }) => {
 
                     return (

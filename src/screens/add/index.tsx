@@ -44,7 +44,7 @@ const newLandmarkFormSchema = z.object({
 type newLandmarkFormInputs = z.infer<typeof newLandmarkFormSchema>;
 
 export function Add({ navigation }: any) {
-    const { user } = useAuth();
+    const { addPost } = useData();
     const [images, setImages] = useState<string[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -71,20 +71,8 @@ export function Add({ navigation }: any) {
 
     async function handleCreatePost(data: newLandmarkFormInputs) {
         try {
-            console.log(data);
 
-            const newPost = {
-                user_id: user?.id,
-                description: data.description
-            }
-
-            const response = await api.post("/feed/post", newPost);
-
-            // Obter o ID do post criado
-            const postId = response.data.post.id;
-
-            // // Enviar imagens
-            await sendImages(postId);
+            await addPost(data.description, images)
 
             setValue("description", "");
             setImages([]);
@@ -104,30 +92,6 @@ export function Add({ navigation }: any) {
                 text2: "Não foi possível cadastrar",
                 position: "bottom",
             });
-        }
-    }
-
-    async function sendImages(postId: number) {
-        try {
-            for (let index = 0; index < images.length; index++) {
-                const image = images[index];
-
-                const imageObject = {
-                    name: `image_${index}.jpg`,
-                    uri: Platform.OS === "android" ? image : image.replace("file://", ""),
-                    type: mime.getType(image),
-                };
-
-                const imageFormData = new FormData();
-                imageFormData.append('file', imageObject);
-                imageFormData.append("postId", String(postId));
-
-                await api.post(`/feed/post/image`, imageFormData, {
-                    headers: { "Content-Type": "multipart/form-data" },
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao enviar imagens:", error);
         }
     }
 
@@ -220,7 +184,7 @@ export function Add({ navigation }: any) {
                     >
                         {images.length > 0 &&
                             images.map((uri, index) => (
-                                <View>
+                                <View key={index}>
                                     <StyledTouchableOpacity
                                         onPress={() => handleDeleteImage(index)}
                                     >

@@ -30,7 +30,7 @@ interface ISignInCredentials {
 
 interface IAuthContextData {
     user: IUser | undefined;
-    loadingUser : boolean;
+    loadingUser: boolean;
     signIn: (credentials: ISignInCredentials) => Promise<void>;
     signUp: (credentials: ISignUpCredentials) => Promise<void>;
     signOut: () => Promise<void>;
@@ -51,6 +51,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
         password,
     }: ISignInCredentials) {
         try {
+
             const response = await api.post("/auth/login", {
                 email,
                 password,
@@ -68,6 +69,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
 
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
                 await AsyncStorage.setItem("TOKEN", responseData.token);
+                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.refreshToken);
 
                 setUser(dataSave);
                 Toast.show({
@@ -81,7 +83,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             }
         } catch (error) {
             console.error(error);
-            throw error; // Lançar a exceção para ser capturada no componente SignIn
+            throw error;
         }
     }
 
@@ -113,6 +115,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
                 setUser(dataSave);
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
                 await AsyncStorage.setItem("TOKEN", responseData.token);
+                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.refreshToken);
 
             } else {
                 throw new Error("Token not received");
@@ -126,11 +129,12 @@ function AuthProvider({ children }: IAuthProviderProps) {
     async function loadStorageData() {
         const userStorage = await AsyncStorage.getItem("USER");
         const tokenStorage = await AsyncStorage.getItem("TOKEN");
+        const refreshTokenStoraged = await AsyncStorage.getItem("REFRESH_TOKEN") || "";
 
         if (userStorage && tokenStorage) {
             const userLogged = JSON.parse(userStorage) as IUser;
             api.defaults.headers.authorization = tokenStorage;
-
+            renewToken(refreshTokenStoraged);
             setUser({ ...userLogged });
             setLoadingUser(false);
         }
@@ -141,9 +145,39 @@ function AuthProvider({ children }: IAuthProviderProps) {
             setUser({} as IUser);
             await AsyncStorage.removeItem("USER");
             await AsyncStorage.removeItem("TOKEN");
+            await AsyncStorage.removeItem("REFRESH_TOKEN");
             api.defaults.headers.authorization = null;
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    async function renewToken(oldRefreshToken: string) {
+        try {
+            const response = await api.post("/auth/refresh-token", null, { headers: { refresh_token: oldRefreshToken } });
+
+            const { accessToken , refreshToken } = response?.data;
+
+            if (accessToken) {
+                console.log(accessToken);
+                
+                api.defaults.headers.authorization = accessToken;
+
+                await AsyncStorage.setItem("TOKEN", accessToken);
+                await AsyncStorage.setItem("REFRESH_TOKEN", refreshToken);
+
+                Toast.show({
+                    type: "success",
+                    text1: "Sucesso",
+                    text2: "Token renovado com sucesso!",
+                    position: "bottom",
+                });
+            } else {
+                throw new Error("New accessToken not received");
+            }
+        } catch (error: any) {
+            console.error("Error renewing token:", error.response.data);
+            //   throw error;
         }
     }
 

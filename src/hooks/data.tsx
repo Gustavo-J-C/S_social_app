@@ -7,20 +7,21 @@ import React, {
     useEffect
 } from "react";
 import { api } from "../services/api";
-import Toast from "react-native-toast-message";
+import mime from "mime";
 import { Post } from "../@types/posts";
 import { useAuth } from "./auth";
-import { createPost } from "../utils/posts/createPost";
+import { Platform } from "react-native";
 
 interface IDataContextData {
     posts: Post[];
+    userPosts: Post[];
     loading: boolean;
     hasMorePosts: boolean;
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
     unlikePost: (postId: number) => Promise<void>;
     getUserInfo: (userId: number) => Promise<any>;
-    addPost: (postData: { description: string; }) => Promise<void>;
+    addPost: (description: string, images: string[]) => Promise<void>
     getPostLikes: (postId: string, userId?: number | undefined) => Promise<any>;
     getPostComments: (postId: number) => Promise<any>;
 }
@@ -37,6 +38,7 @@ function DataProvider({ children }: IDataProviderProps) {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMorePosts, setHasMorePosts] = useState(true);
+    const [ userPosts, setUserPosts] = useState<Post[]>([]);
 
     const userCacheKey = "@MyApp:userCache";
 
@@ -47,9 +49,11 @@ function DataProvider({ children }: IDataProviderProps) {
             setLoading(true);
 
             const response = await api.get(`/feed/posts?page=1&userId=${user?.id}`);
+            const userPostsResponse = await api.get(`user/${user?.id}/posts`);
 
+            setUserPosts(userPostsResponse.data.data.posts);
             setPosts(response.data.posts);
-            setPage(2); // Incrementa a página para a próxima chamada
+            setPage(2);
 
             setLoading(false);
 
@@ -61,8 +65,56 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     }
 
-    async function addPost(postData: {description: string}) {
-        await createPost('/feed/post' ,postData)
+    // async function addPost(postData: {description: string}) {
+    //     await createPost('/feed/post' ,postData)
+    // }
+    async function addPost(description: string, images: string[]) {
+        try {
+
+            const newPost = {
+                user_id: user?.id,
+                description
+            }
+
+            const response = await api.post("/feed/post", newPost);
+
+            // Obter o ID do post criado
+            const postId = response.data.post.id;
+
+            // // Enviar imagens
+            await sendImages(postId, images);
+
+        } catch (error: any) {
+            console.error("Erro ao criar post:", error);
+
+        }
+    }
+
+    async function sendImages(postId: number, images: string[]) {
+        try {
+            for (let index = 0; index < images.length; index++) {
+                const image = images[index];
+
+                const imageObject = {
+                    name: `image_${index}.jpg`,
+                    uri: Platform.OS === "android" ? image : image.replace("file://", ""),
+                    type: mime.getType(image),
+                };
+
+                const imageFormData = new FormData();
+                imageFormData.append('file', imageObject);
+                imageFormData.append("postId", String(postId));
+
+                await api.post(`/feed/post/image`, imageFormData, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                });
+            }
+            const {data: {data: {post}}} = await api.get(`/feed/post/${postId}`);
+            setPosts((prevPosts) => [post, ...prevPosts]);
+        } catch (error) {
+            console.error("Erro ao enviar imagens:", error);
+            throw error;
+        }
     }
 
     async function loadMorePosts() {
@@ -90,9 +142,11 @@ function DataProvider({ children }: IDataProviderProps) {
 
     async function likePost(postId: string) {
         try {
-            const response = api.post(`/feed/post/${postId}/like`)
+            console.log(postId);
+            
+            api.post(`/feed/post/${postId}/like`)
         } catch (error) {
-            console.error(error);
+            throw error;
         }
     }
 
@@ -109,7 +163,8 @@ function DataProvider({ children }: IDataProviderProps) {
     async function unlikePost(postId: number) {
         try {
             const reponse = await api.delete(`/feed/post/${postId}/unlike`);
-            // Atualiza o estado local para refletir a remoção do like
+
+
             setPosts((prevPosts) =>
                 prevPosts.map((post) =>
                     post.id === postId ? { ...post, likedPost: false } : post
@@ -181,6 +236,7 @@ function DataProvider({ children }: IDataProviderProps) {
                 posts,
                 loading,
                 hasMorePosts,
+                userPosts,
                 getPosts: loadMorePosts, // Renomeando para refletir a funcionalidade de carregar mais posts
                 likePost,
                 unlikePost,
