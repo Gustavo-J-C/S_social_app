@@ -1,5 +1,5 @@
 // commentMiddleware.js
-const Comment = require('../models/commentModel');
+const Comment = require('../models/CommentModel');
 
 async function checkCommentExistence(req, res, next) {
   try {

@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/UserModel');
-const Follower = require('../models/followerModel');
+const Follower = require('../models/FollowerModel');
 const Post = require('../models/PostModel');
 // const  User, Followers = require('../models'); // Importe os modelos
 

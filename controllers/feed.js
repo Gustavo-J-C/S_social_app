@@ -1,7 +1,7 @@
-const Post = require('../models/PostModel');
+const Post = require("../models/PostModel");
 const PostImage = require('../models/PostImageModel');
-const PostLike = require('../models/postLikeModel');
-const Comment = require('../models/commentModel');
+const PostLike = require('../models/PostLikeModel');
+const Comment = require('../models/CommentModel');
 
 exports.getPosts = async function (req, res) {
     try {

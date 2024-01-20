@@ -25,7 +25,7 @@ const register = async function (req, res, next) {
       password: hashedPassword,
     });
 
-    const { accessToken, refreshToken } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens(newUser);
 
     res.status(201).json({ 
       data: {
