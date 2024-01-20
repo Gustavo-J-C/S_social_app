@@ -5,7 +5,13 @@ const sequelize = new Sequelize(
   host: process.env.MYSQL_HOST,
   dialect: 'mysql',
   port: process.env.MYSQL_PORT,
-  define: { timestamps: false }
+  define: { 
+      timestamps: true,
+      underscored: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+      deletedAt: 'deleted_at',
+   }
 });
 
 // Testar a conexão com o banco de dados

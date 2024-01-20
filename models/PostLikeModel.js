@@ -13,14 +13,17 @@ const PostLike = sequelize.define('post_likes', {
   },
   created_at: {
     type: Sequelize.DATE,
-    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-    allowNull: false,
+    defaultValue: new Date(),
+    allowNull: true,
+  },
+  updated_at: {
+    type: Sequelize.DATE,
+    defaultValue: new Date(),
+    allowNull: true,
   },
   deleted_at: {
     type: Sequelize.DATE,
   }
-}, {
-  timestamps: false,
 });
 
 

@@ -20,14 +20,17 @@ const Post = sequelize.define('posts', {
   },
   created_at: {
     type: Sequelize.DATE,
-    defaultValue: Sequelize.NOW,
-    allowNull: false,
+    defaultValue: new Date(),
+    allowNull: true,
+  },
+  updated_at: {
+    type: Sequelize.DATE,
+    defaultValue: new Date(),
+    allowNull: true,
   },
   deleted_at: {
     type: Sequelize.DATE,
   },
-}, {
-  timestamps: false,
 });
 
 Post.hasMany(PostImage, { foreignKey: 'post_id' });
