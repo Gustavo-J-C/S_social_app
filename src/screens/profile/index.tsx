@@ -1,14 +1,9 @@
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
-import { useState } from "react";
 import { Container } from "../SignIn/styles";
-import { Header, HeaderTitle, ImageArea } from "./styles";
-import { ButtonPrimary } from "../../components/ButtonPrimary";
+import { Header, ImageArea } from "./styles";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
-
-
-const baseUri = "http://192.168.0.106:3000";
 
 export default function Profile({ navigation }: any) {
 
@@ -63,7 +58,7 @@ export default function Profile({ navigation }: any) {
                         <TouchableOpacity style={styles.imageArea}>
                             <Image
                                 style={styles.image}
-                                source={{ uri: item.post_images[0].url.replace("http://localhost:3000", baseUri) }}
+                                source={{ uri: item.post_images[0].url }}
                                 onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
                         </TouchableOpacity>
                     );

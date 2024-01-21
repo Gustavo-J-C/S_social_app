@@ -5,13 +5,15 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from "react-native";
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
+
 import {
     Container,
     Label,
     Form,
     FotterButton,
     Header,
-    HeaderTitle,
     StyledTouchableOpacity,
 }
     from "./styles";
@@ -19,22 +21,16 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as ImagePicker from "expo-image-picker";
-import mime from "mime";
 
 import camPlusImage from "../../assets/imgs/cam-plus.png";
 import CustomModal from "./modal";
-import { SelectInputForm } from "../../components/Form/SelectInput";
 import { InputForm } from "../../components/Form/Input";
 import { ButtonPrimary } from "../../components/ButtonPrimary";
-import { useFocusEffect } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
-import { api } from "../../services/api";
-import { useAuth } from "../../hooks/auth";
 import theme from "../../theme";
 import { useState } from "react";
 import { Image } from "react-native";
 import { View } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { useData } from "../../hooks/data";
 
 const newLandmarkFormSchema = z.object({
@@ -112,11 +108,33 @@ export function Add({ navigation }: any) {
             return;
         }
 
-
-        if (result?.assets[0]?.uri) {
-            setImages([...images, result.assets[0].uri]);
+        try {
+            const fileInfo = await FileSystem.getInfoAsync(result.assets[0].uri);
+            
+            const fileSize = fileInfo.size;
+    
+            // Verifique se o tamanho do arquivo é menor ou igual a 2 * 1024 * 1024 bytes
+            if (fileSize && fileSize <= 2 * 1024 * 1024) {
+                setImages([...images, result.assets[0].uri]);
+                setModalVisible(false);
+            } else {
+                // Realize a compressão da imagem antes de adicionar ao estado
+                const resizedImage = await ImageManipulator.manipulateAsync(
+                    result.assets[0].uri,
+                    [{ resize: { width: 800, height: 800 } }],
+                    { format: ImageManipulator.SaveFormat.JPEG, compress: 0.8 }
+                );
+                const { size } = await FileSystem.getInfoAsync(resizedImage.uri);
+                console.log(size);
+                
+                setImages([...images, resizedImage.uri]);
+            }
+        } catch (error) {
+            console.error('Error getting file size:', error);
+            // Trate o erro conforme necessário
+        } finally {
+            setModalVisible(false);
         }
-        setModalVisible(false);
     }
 
     async function handleImageSelect() {
@@ -135,6 +153,8 @@ export function Add({ navigation }: any) {
         if (result.canceled) {
             return;
         }
+
+        console.log(result.assets);
 
         if (result?.assets[0]?.uri) {
             setImages([...images, result.assets[0].uri]);

@@ -37,7 +37,6 @@ export default function Home() {
 
   const handleCreateComment = async () => {
     if (user?.id === undefined || selectedPostId === undefined) {
-      console.error('user?.id or selectedPostId is undefined');
       return;
     }
   
@@ -53,6 +52,7 @@ export default function Home() {
   
       setCurrentPosts(updatedPosts);
       setPostComments((prevComments) => [...prevComments, data]);
+      setCommentDescription("");
     } catch (error) {
       console.error('Error creating comment:', error);
       // Handle the error according to your application's needs
@@ -94,12 +94,6 @@ export default function Home() {
         <View
           style={[
             styles.centeredView,
-            // {
-            //   backgroundColor: fadeAnimation.interpolate({
-            //     inputRange: [0, 1],
-            //     outputRange: ["rgba(52, 52, 52, 0)", "rgba(52, 52, 52, 0.8)"],
-            //   }),
-            // },
           ]}
         >
           <TouchableOpacity activeOpacity={1} style={styles.touchableOpacity} onPress={handleComment} />
@@ -116,8 +110,6 @@ export default function Home() {
               data={postComments}
               renderItem={({ item, index }) => <CommentComponent comment={item} />}
               keyExtractor={(_, index) => index.toString()}
-              // onEndReached={handleEndReached}
-              // onEndReachedThreshold={0.1}
               ListFooterComponent={renderFooter}
             />
           </View>

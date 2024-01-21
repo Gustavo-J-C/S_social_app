@@ -7,8 +7,6 @@ import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
 
-const baseUri = "http://192.168.0.106:3000";
-
 type PropType = {
     post: Post
     handleComment: (postId: number) => void,
@@ -119,7 +117,7 @@ export default function PostComponent({ post, handleComment }: PropType) {
                 setLikes(likes + 1);
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error.response);
         }
     };
@@ -155,7 +153,7 @@ export default function PostComponent({ post, handleComment }: PropType) {
                 renderItem={({ item }) =>
                     <Image
                         style={styles.image}
-                        source={{ uri: item?.url?.replace("http://localhost:3000", baseUri) }}
+                        source={{ uri: item?.url }}
                         onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
                 }
             />

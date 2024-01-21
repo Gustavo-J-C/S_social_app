@@ -43,9 +43,9 @@ export function TabRoutes() {
             <Tab.Screen
                 name="Home"
                 component={Home}
-                options={{
-                    tabBarBadge: 3,
-                }}
+                // options={{
+                //     tabBarBadge: 3,
+                // }}
             />
             <Tab.Screen
                 name="Add"

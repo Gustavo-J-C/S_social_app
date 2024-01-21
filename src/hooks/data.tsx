@@ -45,23 +45,29 @@ function DataProvider({ children }: IDataProviderProps) {
     const userCache: Record<number, any> = {};
 
     async function getInitialPosts() {
+        if (!user?.id) {
+            return
+        }
         try {
             setLoading(true);
 
             const response = await api.get(`/feed/posts?page=1&userId=${user?.id}`);
             const userPostsResponse = await api.get(`user/${user?.id}/posts`);
 
-            setUserPosts(userPostsResponse.data.data.posts);
+            const responsePosts = userPostsResponse.data.data.posts 
+            setUserPosts(responsePosts);
+            if (responsePosts.lenght % 6 != 0 || responsePosts.lenght == 0 ) {
+                setHasMorePosts(false)
+            }
             setPosts(response.data.posts);
             setPage(2);
-
-            setLoading(false);
 
             return { success: true };
         } catch (error) {
             console.error(error);
-            setLoading(false);
             return error;
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -118,6 +124,9 @@ function DataProvider({ children }: IDataProviderProps) {
     }
 
     async function loadMorePosts() {
+        if (!user?.id || !hasMorePosts) {
+            return
+        }
         try {
             setLoading(true);
 
@@ -126,17 +135,17 @@ function DataProvider({ children }: IDataProviderProps) {
             if (response.data.posts.length > 0) {
                 setPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
                 setPage((prevPage) => prevPage + 1);
+                response.data.posts.length % 6 != 0 ? setHasMorePosts(false) : true;
             } else {
                 setHasMorePosts(false);
             }
 
-            setLoading(false);
-
             return { success: true };
         } catch (error) {
             console.error(error);
-            setLoading(false);
             return error;
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -228,6 +237,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
     useEffect(() => {
         user ? getInitialPosts() : false;
+        
     }, [user]);
 
     return (
