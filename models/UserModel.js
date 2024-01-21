@@ -20,22 +20,21 @@ const User = sequelize.define('users', {
     allowNull: false,
     unique: true,
   },
+  created_at: {
+    type: Sequelize.NOW,
+    allowNull: false,
+  },
   email_verified_at: {
     type: Sequelize.DATE,
   },
-  created_at: {
+  deleted_at: {
     type: Sequelize.DATE,
-    defaultValue: new Date(),
-    allowNull: true,
   },
   updated_at: {
     type: Sequelize.DATE,
-    defaultValue: new Date(),
-    allowNull: true,
   },
-  deleted_at: {
-    type: Sequelize.DATE,
-  }
+}, {
+  timestamps: false,
 });
 
 User.belongsToMany(User, {

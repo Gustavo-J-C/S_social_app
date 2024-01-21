@@ -169,7 +169,8 @@ exports.likePost = async function (req, res) {
 
         res.json({ message: 'You liked the post.' });
     } catch (error) {
-        if (error.parent.sqlState === '23000') {
+        console.log(error); 
+        if (error.parent?.sqlState === '23000') {
 
             if (error.index === 'fk_users_has_posts_posts1' && error.value === String(req?.params?.postId)) {
                 return res.status(404).json({ message: 'The post does not exist.' });

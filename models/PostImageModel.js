@@ -43,17 +43,13 @@ const PostImage = sequelize.define('post_image', {
   created_at: {
     type: Sequelize.DATE,
     defaultValue: new Date(),
-    allowNull: true,
-  },
-  updated_at: {
-    type: Sequelize.DATE,
-    defaultValue: new Date(),
-    allowNull: true,
+    allowNull: false,
   },
   deleted_at: {
     type: Sequelize.DATE,
   },
 }, {
+  timestamps: false,
   hooks: {
     beforeCreate: (postImageInstance) => {
       if (!postImageInstance.url) {

@@ -14,16 +14,13 @@ const CommentLike = sequelize.define('comment_likes', {
   created_at: {
     type: Sequelize.DATE,
     defaultValue: new Date(),
-    allowNull: true,
-  },
-  updated_at: {
-    type: Sequelize.DATE,
-    defaultValue: new Date(),
-    allowNull: true,
+    allowNull: false,
   },
   deleted_at: {
     type: Sequelize.DATE,
   },
+}, {
+  timestamps: false,
 });
 
 

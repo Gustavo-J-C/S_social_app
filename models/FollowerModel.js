@@ -19,16 +19,13 @@ const Follower = sequelize.define('followers', {
   created_at: {
     type: Sequelize.DATE,
     defaultValue: new Date(),
-    allowNull: true,
-  },
-  updated_at: {
-    type: Sequelize.DATE,
-    defaultValue: new Date(),
-    allowNull: true,
+    allowNull: false,
   },
   deleted_at: {
     type: Sequelize.DATE,
   },
+}, {
+  timestamps: false,
 });
 
 Follower.belongsTo(User, { as: 'followerUser', foreignKey: 'user_follower_id' });
