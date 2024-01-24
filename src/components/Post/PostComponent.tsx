@@ -8,6 +8,7 @@ import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
 
 type PropType = {
+    navigation: any
     post: Post
     handleComment: (postId: number) => void,
 }
@@ -77,7 +78,7 @@ const styles: StylesType = {
     }
 };
 
-export default function PostComponent({ post, handleComment }: PropType) {
+export default function PostComponent({navigation, post, handleComment }: PropType) {
     const images = post.post_images;
 
     const [liked, setLiked] = useState(post.user_liked ? true : false);
@@ -131,10 +132,10 @@ export default function PostComponent({ post, handleComment }: PropType) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: post.users_id})} style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
                 <Text style={styles.timestamp}>{timePassed}</Text>
-            </View>
+            </TouchableOpacity>
             {images?.length > 1 &&
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'absolute', top: 45, paddingVertical: 7, zIndex: 1, justifyContent: 'center', left: '80%',  paddingHorizontal: 8, borderRadius: 25, backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
                     <Text style={{ fontWeight: theme.FONT_WEIGHT.LIGHT, fontSize: 10, color: 'white' }}>{currentImage} / {images.length}</Text>

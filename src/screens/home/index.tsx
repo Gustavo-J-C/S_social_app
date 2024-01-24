@@ -11,7 +11,7 @@ import { Post } from "../../@types/posts";
 import { Comment } from "../../@types/comments";
 import theme from "../../theme";
 
-export default function Home() {
+export default function Home({navigation}: any) {
   const { posts, getPosts, loading, hasMorePosts, getPostComments } = useData();
 
   const [currentPosts, setCurrentPosts] = useState<Post[]>(posts);
@@ -132,7 +132,7 @@ export default function Home() {
           backgroundColor: "#F6F7F9",
         }}
         data={currentPosts}
-        renderItem={({ item }) => <PostComponent handleComment={getCommentsData} post={item} />}
+        renderItem={({ item }) => <PostComponent navigation={navigation} handleComment={getCommentsData} post={item} />}
         keyExtractor={(_, index) => index.toString()}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.1}

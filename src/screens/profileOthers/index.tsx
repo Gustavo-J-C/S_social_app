@@ -1,14 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
 import { Container, Header, ImageArea } from "./styles";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
+import { Post } from "../../@types/posts";
 
-export default function Profile({ navigation }: any) {
+export default function Profile({ navigation, route }: any) {
 
     const { signOut, user } = useAuth()
-    const { userPosts } = useData()
+    const { getProfileData } = useData()
+    const [profilePosts, setProfilePosts] = useState<Post[]>([])
+    const [profileFollowers, setProfileFollowers] = useState<{ count: number, data: [] }>({} as { count: number, data: [] })
+    const [profileFollowing, setProfileFollowing] = useState<{ count: number, data: [] }>({} as { count: number, data: [] })
+
+    const userId = route.params.userId
+    useEffect(() => {
+        (async () => {
+            const profileData: any = await getProfileData(userId)
+            console.log(profileData);
+
+            setProfilePosts(profileData.posts)
+            setProfileFollowing(profileData.following)
+            setProfileFollowers(profileData.followers)
+        })();
+    }, [route])
 
     return (
         <Container >
@@ -21,20 +37,20 @@ export default function Profile({ navigation }: any) {
                         />
                     </ImageArea>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userPosts.length}</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profilePosts.length}</Text>
                         <Text>Publicações</Text>
                     </View>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>0</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowers.count}</Text>
                         <Text>seguidores</Text>
                     </View>
                     <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>0</Text>
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowing.count}</Text>
                         <Text>Seguindo</Text>
                     </View>
                 </View>
                 <View style={{ paddingTop: 10, justifyContent: 'center' }}>
-                    <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{user?.name}</Text>
+                    <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{route.params.userName}</Text>
                 </View>
 
             </Header>
@@ -42,16 +58,20 @@ export default function Profile({ navigation }: any) {
                 <TouchableOpacity
                     style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.TEXT.GRAY }}
                 >
-                    <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>Editar Perfil</Text>
+                    {userId == user?.id ?
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>Editar Perfil</Text>
+                        :
+                        <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>Seguir</Text>
+                    }
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={signOut}
                     style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.COLORS.PRIMARY }}>
-                    <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, color: 'white'}}>Logout</Text>
+                    <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, color: 'white' }}>Logout</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
-                data={ userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
+                data={profilePosts?.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 renderItem={({ item }) => {
 
                     return (

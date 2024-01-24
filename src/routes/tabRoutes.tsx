@@ -6,10 +6,14 @@ import { Platform, View } from "react-native";
 import theme from "../theme";
 import Profile from "../screens/profile";
 import { Add } from "../screens/add";
+import { HomeRoutes } from "./homeRoutes";
+import { useAuth } from "../hooks/auth";
 
 const Tab = createBottomTabNavigator();
 
 export function TabRoutes() {
+
+    const {user} = useAuth()
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -42,7 +46,7 @@ export function TabRoutes() {
         >
             <Tab.Screen
                 name="Home"
-                component={Home}
+                component={HomeRoutes}
                 // options={{
                 //     tabBarBadge: 3,
                 // }}
@@ -53,6 +57,11 @@ export function TabRoutes() {
             />
             <Tab.Screen
                 name="Profile"
+                options={({ navigation, route }) => ({
+                    headerShown: true,
+                    headerShadowVisible: false,
+                    title: user?.name,
+                })}
                 component={Profile}
             />
         </Tab.Navigator>

@@ -22,6 +22,7 @@ interface IDataContextData {
     likePost: (postId: string) => Promise<void>;
     unlikePost: (postId: number) => Promise<void>;
     getUserInfo: (userId: number) => Promise<any>;
+    getProfileData: (userId: string) => Promise<any>;
     addPost: (description: string, images: string[]) => Promise<void>
     getPostLikes: (postId: string, userId?: number | undefined) => Promise<any>;
     getPostComments: (postId: number) => Promise<any>;
@@ -250,6 +251,16 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     };
 
+    const getProfileData = async (userId: string) => {
+        try {
+            const { data: {data: profileData}} = await api.get(`profile/${userId}/summary`)            
+            return profileData;
+        } catch (error) {
+            console.error("Error parsing user cache:", error);
+            return;
+        }
+    }
+
     useEffect(() => {
 
         loadUserCache();
@@ -273,6 +284,7 @@ function DataProvider({ children }: IDataProviderProps) {
                 getPostLikes,
                 getPostComments,
                 getUserInfo,
+                getProfileData,
                 addPost
             }}
         >
