@@ -72,7 +72,7 @@ export function Add({ navigation }: any) {
 
             setValue("description", "");
             setImages([]);
-            navigation.navigate("Home");
+            navigation.pop();
 
             Toast.show({
                 type: "success",
@@ -109,23 +109,19 @@ export function Add({ navigation }: any) {
         }
 
         try {
-            const fileInfo = await FileSystem.getInfoAsync(result.assets[0].uri);
+            const fileInfo: any = await FileSystem.getInfoAsync(result.assets[0].uri);
             
             const fileSize = fileInfo.size;
     
-            // Verifique se o tamanho do arquivo é menor ou igual a 2 * 1024 * 1024 bytes
             if (fileSize && fileSize <= 2 * 1024 * 1024) {
                 setImages([...images, result.assets[0].uri]);
                 setModalVisible(false);
             } else {
-                // Realize a compressão da imagem antes de adicionar ao estado
                 const resizedImage = await ImageManipulator.manipulateAsync(
                     result.assets[0].uri,
                     [{ resize: { width: 800, height: 800 } }],
                     { format: ImageManipulator.SaveFormat.JPEG, compress: 0.8 }
                 );
-                const { size } = await FileSystem.getInfoAsync(resizedImage.uri);
-                console.log(size);
                 
                 setImages([...images, resizedImage.uri]);
             }
@@ -153,8 +149,6 @@ export function Add({ navigation }: any) {
         if (result.canceled) {
             return;
         }
-
-        console.log(result.assets);
 
         if (result?.assets[0]?.uri) {
             setImages([...images, result.assets[0].uri]);

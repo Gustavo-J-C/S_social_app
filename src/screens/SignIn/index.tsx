@@ -43,7 +43,6 @@ export function SignIn({ navigation }: any) {
 
   async function handleSignIn() {
     try {
-
       setEmailError(null);
       setPasswordError(null);
 

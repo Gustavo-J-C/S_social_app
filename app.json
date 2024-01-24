@@ -22,6 +22,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "INTERNET"
+      ],
       "package": "com.chmhuster.social"
     },
     "web": {
@@ -31,6 +34,16 @@
       "eas": {
         "projectId": "84138ac4-7d71-43bb-bced-3c7cb20abb1e"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ]
   }
 }

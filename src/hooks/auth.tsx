@@ -51,26 +51,36 @@ function AuthProvider({ children }: IAuthProviderProps) {
         password,
     }: ISignInCredentials) {
         try {
-
-            const response = await api.post("/auth/login", {
-                email,
-                password,
+            const response = await fetch("http://social.chmhuster.com.br:3000/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
             });
-            const responseData = response?.data?.data;
-
-            if (responseData?.token) {
-                api.defaults.headers.authorization = responseData?.token;
-
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const responseData = await response.json();
+    
+            if (responseData?.data?.token) {
+                api.defaults.headers.authorization = responseData.data.token;
+    
                 const dataSave = {
-                    id: responseData.user.id,
-                    name: responseData.user.name,
+                    id: responseData.data.user.id,
+                    name: responseData.data.user.name,
                     email,
                 };
-
+    
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
-                await AsyncStorage.setItem("TOKEN", responseData.token);
-                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.refreshToken);
-
+                await AsyncStorage.setItem("TOKEN", responseData.data.token);
+                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.data?.refreshToken);
+    
                 setUser(dataSave);
                 Toast.show({
                     type: "success",
@@ -86,6 +96,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             throw error;
         }
     }
+    
 
     async function signUp({
         name,
@@ -159,8 +170,6 @@ function AuthProvider({ children }: IAuthProviderProps) {
             const { accessToken , refreshToken } = response?.data;
 
             if (accessToken) {
-                console.log(accessToken);
-                
                 api.defaults.headers.authorization = accessToken;
 
                 await AsyncStorage.setItem("TOKEN", accessToken);

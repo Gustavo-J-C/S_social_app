@@ -11,6 +11,7 @@ import mime from "mime";
 import { Post } from "../@types/posts";
 import { useAuth } from "./auth";
 import { Platform } from "react-native";
+import { getPost } from "../utils/posts/getPost";
 
 interface IDataContextData {
     posts: Post[];
@@ -38,11 +39,10 @@ function DataProvider({ children }: IDataProviderProps) {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMorePosts, setHasMorePosts] = useState(true);
-    const [ userPosts, setUserPosts] = useState<Post[]>([]);
+    const [userPosts, setUserPosts] = useState<Post[]>([]);
+    const [userCache, setUserCache] = useState(new Map());
 
     const userCacheKey = "@MyApp:userCache";
-
-    const userCache: Record<number, any> = {};
 
     async function getInitialPosts() {
         if (!user?.id) {
@@ -54,9 +54,11 @@ function DataProvider({ children }: IDataProviderProps) {
             const response = await api.get(`/feed/posts?page=1&userId=${user?.id}`);
             const userPostsResponse = await api.get(`user/${user?.id}/posts`);
 
-            const responsePosts = userPostsResponse.data.data.posts 
+            const responsePosts = userPostsResponse.data.data.posts
+            const postResponse = response.data.posts
             setUserPosts(responsePosts);
-            if (responsePosts.lenght % 6 != 0 || responsePosts.lenght == 0 ) {
+
+            if (postResponse.length % 6 != 0 || postResponse.length == 0) {
                 setHasMorePosts(false)
             }
             setPosts(response.data.posts);
@@ -71,9 +73,6 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     }
 
-    // async function addPost(postData: {description: string}) {
-    //     await createPost('/feed/post' ,postData)
-    // }
     async function addPost(description: string, images: string[]) {
         try {
 
@@ -115,8 +114,10 @@ function DataProvider({ children }: IDataProviderProps) {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
             }
-            const {data: {data: {post}}} = await api.get(`/feed/post/${postId}`);
+            const { data: { data: { post } } } = await api.get(`/feed/post/${postId}`);
             setPosts((prevPosts) => [post, ...prevPosts]);
+            const newPost = await getPost(postId);
+            setUserPosts((prevPosts) => ([...prevPosts, newPost]))
         } catch (error) {
             console.error("Erro ao enviar imagens:", error);
             throw error;
@@ -124,7 +125,7 @@ function DataProvider({ children }: IDataProviderProps) {
     }
 
     async function loadMorePosts() {
-        if (!user?.id || !hasMorePosts) {
+        if (!user?.id || !hasMorePosts) {            
             return
         }
         try {
@@ -151,8 +152,6 @@ function DataProvider({ children }: IDataProviderProps) {
 
     async function likePost(postId: string) {
         try {
-            console.log(postId);
-            
             api.post(`/feed/post/${postId}/like`)
         } catch (error) {
             throw error;
@@ -181,63 +180,84 @@ function DataProvider({ children }: IDataProviderProps) {
             );
         } catch (error: any) {
             console.error(error);
-            throw error           
+            throw error
         }
     }
 
     const getUserInfo = async (userId: number) => {
-        const cachedUser = userCache[userId];
-      
-        if (cachedUser) { 
-          return cachedUser;
+        const cachedUser = userCache.get(String((userId)));
+        
+        if (cachedUser) {
+            return cachedUser;
         }
-      
+    
         try {
-          const response = await api.get(`/profile/${userId}`);
-          const userInfo = response.data;
-      
-          // Armazena as informações do usuário em cache
-          userCache[userId] = userInfo;
-          await AsyncStorage.setItem(userCacheKey, JSON.stringify(userCache));
-      
-          return userInfo;
+            const response = await api.get(`/profile/${userId}`);
+            const userInfo = response.data;
+    
+            setUserCache((prevCache) => new Map(prevCache.set(userId, userInfo)));
+
+            try {
+                setUserCache((prevCache) => {
+                    const updatedCache = new Map(prevCache.set(userId, userInfo));                    
+        
+                    try {
+                        AsyncStorage.setItem(userCacheKey, JSON.stringify(Object.fromEntries(updatedCache)));
+                    } catch (saveError) {
+                        console.error("Error saving user info to AsyncStorage:", saveError);
+                    }
+        
+                    return updatedCache;
+                });
+        
+            } catch (saveError) {
+                console.error("Error saving user info to AsyncStorage:", saveError);
+            }
+    
+            return userInfo;
         } catch (error) {
-          console.error(`Error fetching user info for userId ${userId}:`, error);
-          throw error;
+            console.error(`Error fetching user info for userId ${userId}:`, error);
+            throw error;
         }
     };
 
     async function getPostComments(postId: number) {
         try {
-          const response = await api.get(`/comments/post/${postId}`);  
-          return response.data.data;
+            const response = await api.get(`/comments/post/${postId}`);
+            return response.data.data;
         } catch (error) {
-          console.error(`Error fetching comments for post ${postId}:`, error);
-          throw error;
+            console.error(`Error fetching comments for post ${postId}:`, error);
+            throw error;
         }
-      }
+    }
+
+    const loadUserCache = async () => {
+        try {
+            const cachedUsers = await AsyncStorage.getItem(userCacheKey);
+            
+
+            if (cachedUsers) {
+                try {
+                    const parsedCache = JSON.parse(cachedUsers);
+                    const cacheMap = new Map(Object.entries(parsedCache));
+                    setUserCache(() => (cacheMap));
+                } catch (parseError) {
+                    console.error("Error parsing user cache:", parseError);
+                }
+            }
+        } catch (error) {
+            console.error("Error loading user cache:", error);
+        }
+    };
 
     useEffect(() => {
-        // Carrega o cache de usuários ao inicializar
-        const loadUserCache = async () => {
-            try {
-                const cachedUsers = await AsyncStorage.getItem(userCacheKey);
-
-                if (cachedUsers) {
-                    const parsedCache = JSON.parse(cachedUsers);
-                    Object.assign(userCache, parsedCache);
-                }
-            } catch (error) {
-                console.error("Error loading user cache:", error);
-            }
-        };
 
         loadUserCache();
     }, []);
 
     useEffect(() => {
         user ? getInitialPosts() : false;
-        
+
     }, [user]);
 
     return (

@@ -1,3 +1,4 @@
+import React from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
 import { Container } from "../SignIn/styles";
@@ -11,7 +12,7 @@ export default function Profile({ navigation }: any) {
     const { userPosts } = useData()
 
     return (
-        <Container style={styles.container}>
+        <Container >
             <Header style={{ width: '90%' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <ImageArea>
@@ -51,7 +52,7 @@ export default function Profile({ navigation }: any) {
                 </TouchableOpacity>
             </View>
             <FlatList
-                data={userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
+                data={ userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 renderItem={({ item }) => {
 
                     return (
@@ -72,8 +73,6 @@ export default function Profile({ navigation }: any) {
 
 
 const styles = StyleSheet.create({
-    container: {
-    },
     tinyLogo: {
         width: 70,
         height: 70,
@@ -89,7 +88,10 @@ const styles = StyleSheet.create({
         resizeMode: "contain",
     },
     contentContainer: {
-        marginTop: 30
+        alignItems: "flex-start",
+        width: Dimensions.get("window").width * 0.9,
+        marginTop: 30,
+        justifyContent: 'flex-start'
     },
     imageArea: {
         borderColor: theme.COLORS.WHITE,
