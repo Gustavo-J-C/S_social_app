@@ -2,7 +2,7 @@ import { BackHandler, StatusBar, TouchableOpacity, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import Feather from '@expo/vector-icons/Feather';
 import WelcomeImage from '../../assets/imgs/welcomeImage.png';
-import React, { useState } from "react";
+import { useState, useCallback } from "react";
 
 import {
   Container,
@@ -29,7 +29,7 @@ export function SignIn({ navigation }: any) {
   const { signIn, user } = useAuth();
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const onBackPress = () => {
         return true; // Prevent going back to splash screen
       };

@@ -1,13 +1,14 @@
 import { TextInput, TextInputProps } from "react-native";
 import { useTheme } from "styled-components/native";
 import { Controller, Control } from "react-hook-form";
+import { RefObject } from "react";
 
 import { Container, Error, Input } from "./styles";
 import theme from "../../../theme";
 
 type Props = TextInputProps & {
   control: Control;
-  inputRef?: React.RefObject<TextInput>;
+  inputRef?: RefObject<TextInput>;
   size?: string;
   error: string;
   name: string;

@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import { useTheme } from "styled-components/native";
 import { Controller, Control } from "react-hook-form";
 import { Container, Error, SelectInput } from "./styles";
@@ -6,7 +7,7 @@ import theme from "../../../theme";
 
 type Props = SelectListProps & {
   control: Control;
-  selectInputRef?: React.RefObject<SelectList>;
+  selectInputRef?: RefObject<SelectList>;
   error: string;
   name: string;
   isNote?: boolean;

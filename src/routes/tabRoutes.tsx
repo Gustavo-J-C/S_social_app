@@ -1,4 +1,3 @@
-import React from "react";
 import { Feather, Octicons, Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../screens/home/index";

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Text, ActivityIndicator, Modal, Alert, View, Dimensions, StyleSheet, TouchableOpacity, Animated, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createComment } from '../../utils/comments/createComment'
@@ -28,11 +28,11 @@ export default function Home({navigation}: any) {
   }, [posts])
 
   const getCommentsData = async (postId: number) => {
-    const newComments = await getPostComments(postId)
-    
-    setPostComments(newComments.comments)
-    setSelectedPostId(postId);
     handleComment();
+    getPostComments(postId).then(newComments => {
+      setPostComments(newComments.comments)
+      setSelectedPostId(postId);
+    })
   }
 
   const handleCreateComment = async () => {

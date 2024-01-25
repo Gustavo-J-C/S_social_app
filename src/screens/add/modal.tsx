@@ -1,4 +1,3 @@
-import React from 'react';
 import { Modal, TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons'; // Certifique-se de ter instalado o pacote "@expo/vector-icons" no seu projeto
 import theme from '../../theme';

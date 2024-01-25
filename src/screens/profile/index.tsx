@@ -1,4 +1,3 @@
-import React from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
 import { Container, Header, ImageArea } from "./styles";
@@ -63,6 +62,7 @@ export default function Profile({ navigation }: any) {
                         </TouchableOpacity>
                     );
                 }}
+                scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
                 numColumns={3}
                 contentContainerStyle={styles.contentContainer}
@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
         height: 58,
     },
     image: {
-        width: (Dimensions.get("window").width / 3) * 0.9,
+        width: (Dimensions.get("window").width / 3),
         aspectRatio: 1,
         resizeMode: "contain",
     },
     contentContainer: {
         alignItems: "flex-start",
-        width: Dimensions.get("window").width * 0.9,
+        width: Dimensions.get("window").width,
         marginTop: 30,
         justifyContent: 'flex-start'
     },

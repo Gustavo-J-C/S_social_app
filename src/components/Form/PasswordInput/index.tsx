@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Controller, Control } from "react-hook-form";
 import { TextInputProps, TouchableOpacity } from "react-native";
 import { useTheme } from "styled-components";

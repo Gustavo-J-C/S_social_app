@@ -1,16 +1,18 @@
 import styled from "styled-components/native";
 
+export const Container = styled.ScrollView.attrs(() => ({
+  showsVerticalScrollIndicator: false,
+  contentContainerStyle: {
+    alignItems: "center",
+    backgroundColor: "#fff",
+    justifyContent: "center",
+  },
+}))``;
+
 export const ImageArea = styled.TouchableOpacity`
   display: flex;
   text-align: center;
 `
-
-export const Container = styled.View`
-  align-items: center;
-  flex: 1;
-  background-color: #fff;
-  justify-content: center;
-`;
 
 export const TextMD = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.LG}px;

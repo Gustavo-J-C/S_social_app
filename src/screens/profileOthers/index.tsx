@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
 import { Container, Header, ImageArea } from "./styles";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import { Post } from "../../@types/posts";
+import { api } from "../../services/api";
 
-export default function Profile({ navigation, route }: any) {
+export default function ProfileOthers({ navigation, route }: any) {
 
     const { signOut, user } = useAuth()
     const { getProfileData } = useData()
@@ -18,13 +19,22 @@ export default function Profile({ navigation, route }: any) {
     useEffect(() => {
         (async () => {
             const profileData: any = await getProfileData(userId)
-            console.log(profileData);
 
             setProfilePosts(profileData.posts)
             setProfileFollowing(profileData.following)
             setProfileFollowers(profileData.followers)
         })();
     }, [route])
+
+    const handleFollow = async () => {
+        try {
+            await api.post(`profile/follow`, {
+                targetUserId: userId,
+            })
+        } catch (error) {
+            
+        }
+    }
 
     return (
         <Container >
@@ -56,6 +66,7 @@ export default function Profile({ navigation, route }: any) {
             </Header>
             <View style={{ paddingTop: 20, width: '90%', gap: 10, flexDirection: 'row', justifyContent: 'space-evenly' }}>
                 <TouchableOpacity
+                onPress={userId == user?.id ? false : handleFollow}
                     style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.TEXT.GRAY }}
                 >
                     {userId == user?.id ?
@@ -84,6 +95,7 @@ export default function Profile({ navigation, route }: any) {
                     );
                 }}
                 showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
                 numColumns={3}
                 contentContainerStyle={styles.contentContainer}
             />
@@ -103,13 +115,13 @@ const styles = StyleSheet.create({
         height: 58,
     },
     image: {
-        width: (Dimensions.get("window").width / 3) * 0.9,
+        width: (Dimensions.get("window").width / 3),
         aspectRatio: 1,
         resizeMode: "contain",
     },
     contentContainer: {
         alignItems: "flex-start",
-        width: Dimensions.get("window").width * 0.9,
+        width: Dimensions.get("window").width,
         marginTop: 30,
         justifyContent: 'flex-start'
     },
