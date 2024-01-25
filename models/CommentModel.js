@@ -34,9 +34,6 @@ const Comment = sequelize.define('comments', {
   },
 }, {
   timestamps: true,
-  underscored: true,
-  createdAt: 'created_at',
-  deletedAt: 'deleted_at',
 });
 
 Comment.hasMany(CommentLike, { foreignKey: 'comments_id' });

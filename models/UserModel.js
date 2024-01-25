@@ -22,6 +22,7 @@ const User = sequelize.define('users', {
   },
   created_at: {
     type: Sequelize.NOW,
+    defaultValue: new Date(),
     allowNull: false,
   },
   email_verified_at: {
