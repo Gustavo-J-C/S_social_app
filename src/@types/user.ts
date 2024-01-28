@@ -10,12 +10,6 @@ export type User = {
 export interface ProfileData {
     posts: Post[];
     isFriend: boolean;
-    following: {
-        count: number;
-        data: User[];
-    };
-    followers: {
-        count: number;
-        data: User[];
-    };
+    following: number;
+    followers: number;
 }

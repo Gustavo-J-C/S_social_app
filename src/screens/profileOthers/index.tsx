@@ -14,8 +14,8 @@ export default function ProfileOthers({ navigation, route }: any) {
     const { getProfileData } = useData()
     const [profilePosts, setProfilePosts] = useState<Post[]>([])
     const [isFriend, setIsFriend] = useState<boolean>(false)
-    const [profileFollowers, setProfileFollowers] = useState<User[]>([])
-    const [profileFollowing, setProfileFollowing] = useState<User[]>([])
+    const [profileFollowers, setProfileFollowers] = useState<number>(0)
+    const [profileFollowing, setProfileFollowing] = useState<number>(0)
     const [refreshing, setRefreshing] = useState(true)
 
     const userId = route.params.userId
@@ -26,8 +26,8 @@ export default function ProfileOthers({ navigation, route }: any) {
 
             setProfilePosts(profileData.posts);
             setIsFriend(profileData.isFriend);
-            setProfileFollowing(profileData.following.data);
-            setProfileFollowers(profileData.followers.data);
+            setProfileFollowing(profileData.following);
+            setProfileFollowers(profileData.followers);
         } catch (error) {
             console.error('Error fetching profile data:', error);
         } finally {
@@ -45,12 +45,12 @@ export default function ProfileOthers({ navigation, route }: any) {
                 await api.post(`profile/unfollow`, {
                     targetUserId: userId,
                 });
-                setProfileFollowers((prevData) => prevData.filter((follower) => follower.id !== user?.id));
+                setProfileFollowers((prevData) => prevData--);
             } else {
                 await api.post(`profile/follow`, {
                     targetUserId: userId,
                 });
-                setProfileFollowers((prevData) => [...prevData, user!]);
+                setProfileFollowers((prevData) => prevData++);
             }
             // Invertendo o valor de isFriend após a ação
             setIsFriend((prevIsFriend) => !prevIsFriend);
@@ -60,7 +60,13 @@ export default function ProfileOthers({ navigation, route }: any) {
     };
 
     return (
-        <Container >
+        <Container
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={fetchData}
+                />
+            }>
             <FlatList
                 data={profilePosts?.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 ListHeaderComponent={() => (
@@ -78,11 +84,11 @@ export default function ProfileOthers({ navigation, route }: any) {
                                     <Text>Publicações</Text>
                                 </View>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowers.length}</Text>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowers}</Text>
                                     <Text>seguidores</Text>
                                 </View>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowing.length}</Text>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowing}</Text>
                                     <Text>Seguindo</Text>
                                 </View>
                             </View>
@@ -101,25 +107,25 @@ export default function ProfileOthers({ navigation, route }: any) {
                                     {userId == user?.id ? 'Editar Perfil' : isFriend ? 'Deixar de Seguir' : 'Seguir'}
                                 </Text>
                             </TouchableOpacity>
-                            { userId == user?.id && <TouchableOpacity
+                            {userId == user?.id && <TouchableOpacity
                                 onPress={signOut}
                                 style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.COLORS.PRIMARY }}
                             >
                                 <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, color: 'white' }}>Logout</Text>
-                            </TouchableOpacity>} 
+                            </TouchableOpacity>}
                         </View>
                     </>
                 )}
                 renderItem={({ item, index }) => {
                     return (
-                        <TouchableOpacity  
-                        style={
-                            {
-                                borderRightWidth: index % 3 === 2 ? 0 : 2,
-                                borderBottomWidth: 2,
-                                borderColor: "#fff" // Adiciona margem inferior, exceto para as imagens na última linha
-                            }
-                        }>
+                        <TouchableOpacity
+                            style={
+                                {
+                                    borderRightWidth: index % 3 === 2 ? 0 : 2,
+                                    borderBottomWidth: 2,
+                                    borderColor: "#fff" // Adiciona margem inferior, exceto para as imagens na última linha
+                                }
+                            }>
                             <Image
                                 style={styles.image}
                                 source={{ uri: item.post_images[0].url }}
@@ -130,12 +136,6 @@ export default function ProfileOthers({ navigation, route }: any) {
                 showsVerticalScrollIndicator={false}
                 scrollEnabled={false}
                 numColumns={3}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={fetchData}
-                    />
-                }
                 contentContainerStyle={styles.contentContainer}
                 ListHeaderComponentStyle={{ width: "100%", alignItems: "center", marginBottom: 30, paddingHorizontal: 20 }}
             />

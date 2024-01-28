@@ -7,12 +7,19 @@ import { useState } from "react";
 
 export default function Profile({ navigation }: any) {
 
-    const { refreshing, setRefreshing } = useState(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
     const { signOut, user } = useAuth()
     const { userPosts, userFollowing, userFollowers, fetchUserData } = useData()
 
     return (
-        <Container >
+        <Container
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={() => fetchUserData().finally(() => setRefreshing(false))}
+                />
+            }
+        >
             <FlatList
                 data={userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 ListHeaderComponent={() => (
@@ -30,11 +37,11 @@ export default function Profile({ navigation }: any) {
                                     <Text>Publicações</Text>
                                 </View>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowers.length}</Text>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowers}</Text>
                                     <Text>seguidores</Text>
                                 </View>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowing.length}</Text>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowing}</Text>
                                     <Text>Seguindo</Text>
                                 </View>
                             </View>
@@ -78,12 +85,6 @@ export default function Profile({ navigation }: any) {
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
                 numColumns={3}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={() => fetchUserData().finally(setRefreshing(false))}
-                    />
-                }
                 contentContainerStyle={styles.contentContainer}
                 ListHeaderComponentStyle={{ width: "100%", alignItems: "center", marginBottom: 30, paddingHorizontal: 20 }}
             />

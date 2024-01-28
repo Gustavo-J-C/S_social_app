@@ -1,5 +1,4 @@
 import {
-    Platform,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -28,7 +27,7 @@ import { ButtonPrimary } from "../../components/ButtonPrimary";
 import Toast from "react-native-toast-message";
 import theme from "../../theme";
 import { useState } from "react";
-import { Image } from "react-native";
+import { Image, Text } from "react-native";
 import { View } from "react-native";
 import { useData } from "../../hooks/data";
 
@@ -42,6 +41,7 @@ export function Add({ navigation }: any) {
     const { addPost } = useData();
     const [images, setImages] = useState<string[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [imageErrorMessage, setImageErrorMessage] = useState<string>("");
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -67,6 +67,10 @@ export function Add({ navigation }: any) {
     async function handleCreatePost(data: newLandmarkFormInputs) {
         try {
 
+            if (images.length === 0) {
+                setImageErrorMessage("Escolha pelo menos uma imagem.");
+                return;
+            }
             await addPost(data.description, images)
 
             setValue("description", "");
@@ -185,7 +189,7 @@ export function Add({ navigation }: any) {
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{
-                            alignItems: "center",
+                            alignItems: "center",                            
                             justifyContent: "center",
                             flexDirection: "row",
                             gap: 20,
@@ -194,7 +198,7 @@ export function Add({ navigation }: any) {
                             flex: 1,
                         }}
                     >
-                        {images.length > 0 &&
+                         {images.length > 0 ? (
                             images.map((uri, index) => (
                                 <View key={index}>
                                     <StyledTouchableOpacity
@@ -213,7 +217,14 @@ export function Add({ navigation }: any) {
                                         }}
                                     />
                                 </View>
-                            ))}
+                            ))
+                        ) : (
+                            imageErrorMessage && (
+                                <Text style={{ color: 'red', marginTop: 12 }}>
+                                   {imageErrorMessage}
+                                </Text>
+                            )
+                        )}
                     </ScrollView>
                     <InputForm
                         control={control}

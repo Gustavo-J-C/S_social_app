@@ -20,8 +20,8 @@ interface IDataContextData {
     // userProfileData: ProfileData;
     loading: boolean;
     hasMorePosts: boolean;
-    userFollowing: User[];
-    userFollowers: User[];
+    userFollowing: number;
+    userFollowers: number;
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
     getInitialPosts: () => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
@@ -47,8 +47,8 @@ function DataProvider({ children }: IDataProviderProps) {
     const [page, setPage] = useState(1);
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [userPosts, setUserPosts] = useState<Post[]>([]);
-    const [userFollowers, setUserFollowers] = useState<User[]>([])
-    const [userFollowing, setUserFollowing] = useState<User[]>([])
+    const [userFollowers, setUserFollowers] = useState<number>(0)
+    const [userFollowing, setUserFollowing] = useState<number>(0)
     const [userCache, setUserCache] = useState(new Map());
 
     const userCacheKey = "@MyApp:userCache";
@@ -269,8 +269,8 @@ function DataProvider({ children }: IDataProviderProps) {
             const profileData: ProfileData = await getProfileData(String(user?.id));
 
             setUserPosts(profileData.posts);
-            setUserFollowing(profileData.following.data);
-            setUserFollowers(profileData.followers.data);
+            setUserFollowing(profileData.following);
+            setUserFollowers(profileData.followers);
         } catch (error) {
             console.error('Error fetching profile data:', error);
         }
