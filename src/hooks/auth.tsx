@@ -8,13 +8,7 @@ import {
 } from "react";
 import { api } from "../services/api";
 import Toast from "react-native-toast-message";
-
-interface IUser {
-    id: number,
-    name: string,
-    email: string,
-    image?: string
-}
+import { User } from "../@types/user";
 
 interface ISignUpCredentials {
     name: string;
@@ -29,7 +23,7 @@ interface ISignInCredentials {
 }
 
 interface IAuthContextData {
-    user: IUser | undefined;
+    user: User | undefined;
     loadingUser: boolean;
     signIn: (credentials: ISignInCredentials) => Promise<void>;
     signUp: (credentials: ISignUpCredentials) => Promise<void>;

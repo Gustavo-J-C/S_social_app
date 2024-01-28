@@ -71,7 +71,6 @@ export function Add({ navigation }: any) {
 
             setValue("description", "");
             setImages([]);
-            navigation.pop();
 
             Toast.show({
                 type: "success",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FontAwesome, Feather } from "@expo/vector-icons";
-import { Dimensions, FlatList, Image, ImageStyle, NativeScrollEvent, NativeSyntheticEvent, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, Image, ImageStyle, NativeScrollEvent, NativeSyntheticEvent, Text, TextStyle, TouchableOpacity, View } from "react-native";
 import { Post } from '../../@types/posts'
 import { ViewStyle } from "react-native";
 import theme from "../../theme";
@@ -18,7 +18,7 @@ const windowWidth = Dimensions.get('window').width;
 type StylesType = {
     container: ViewStyle;
     header: ViewStyle;
-    username: ViewStyle;
+    username: TextStyle;
     timestamp: ViewStyle;
     image: ImageStyle;
     actionsContainer: ViewStyle;
@@ -43,13 +43,17 @@ const styles: StylesType = {
     },
     username: {
         marginLeft: 20,
+        fontSize: theme.FONT_SIZE.MD,
+        color: theme.COLORS.GRAY_800,
+        lineHeight: 25,
+        fontWeight: theme.FONT_WEIGHT.REGULAR
     },
     timestamp: {
         marginRight: 20,
     },
     image: {
         width: Dimensions.get("window").width * 0.9,
-        aspectRatio: 1.2,
+        aspectRatio: 1,
         resizeMode: "contain"
     },
     actionsContainer: {
@@ -70,6 +74,8 @@ const styles: StylesType = {
     actionItem: {
         flexDirection: "row",
         alignItems: "baseline",
+        padding: 5,
+        // backgroundColor: "black",
         gap: 5,
     },
     emptyImage: {
@@ -88,22 +94,7 @@ export default function PostComponent({navigation, post, handleComment }: PropTy
 
     const timePassed = checkTimePassed(post.created_at);
     const { likePost, unlikePost, getUserInfo } = useData();
-
-    const [username, setUsername] = useState("");
-
-
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const userInfo = await getUserInfo(post.users_id);
-                setUsername(userInfo.name);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        };
-
-        fetchUserInfo();
-    }, []);
+    const username = post.user.name
 
     const handleToggleLike = async () => {
         try {

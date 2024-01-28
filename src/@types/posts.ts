@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export type PostImage = {
     id: number;
     post_id: number;
@@ -15,7 +17,8 @@ export type PostImage = {
 export type Post = {
     like_count: number;
     comment_count: number;
-    user_liked: number
+    user_liked: number;
+    user: User;
     id: number;
     users_id: number;
     title: string;

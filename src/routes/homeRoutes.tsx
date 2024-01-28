@@ -11,11 +11,14 @@ export function HomeRoutes() {
             <Screen name="Index" component={Home} />
             <Screen name="ProfileOthers" component={ProfileOthers}
                 options={({ route }: any) => ({
+                    contentStyle: {
+                        backgroundColor: "#fff"
+                    },
                     headerShown: true,
                     headerShadowVisible: false,
                     title: route.params?.userName,
                 })
-            } />
+                } />
         </Navigator>
     );
 }

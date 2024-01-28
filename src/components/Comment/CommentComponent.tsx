@@ -6,6 +6,7 @@ import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
 import { Comment } from "../../@types/comments";
+import { useNavigation } from "@react-navigation/native";
 
 type PropType = {
     comment: Comment
@@ -35,15 +36,15 @@ const styles: StylesType = {
         marginTop: 20,
     },
     header: {
-        height: 20,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
     },
     username: {
         fontSize: theme.FONT_SIZE.MD,
-        color: theme.TEXT.BLACK,
-        fontWeight: theme.FONT_WEIGHT.BOLD
+        color: theme.COLORS.GRAY_600,
+        lineHeight: 25,
+        fontWeight: theme.FONT_WEIGHT.MEDIUM
     },
     timestamp: {
         marginRight: 20,
@@ -61,6 +62,7 @@ const styles: StylesType = {
     },
     description: {
         color: theme.COLORS.BLACK,
+        fontWeight: theme.FONT_WEIGHT.REGULAR,
         fontSize: theme.FONT_SIZE.SM
     },
     timePassed: {
@@ -90,13 +92,13 @@ const styles: StylesType = {
 
 
 export default function CommentComponent({ comment }: PropType) {
-    const [liked, setLiked] = useState(false);
-    const [likes, setLikes] = useState<number>(0);
-
+    // const [liked, setLiked] = useState(false);
+    // const [likes, setLikes] = useState<number>(0);
+    const navigation = useNavigation();
 
     
     const timePassed = checkTimePassed(comment.created_at);
-    const { likePost, unlikePost, getUserInfo } = useData();
+    const { getUserInfo } = useData();
 
     const [username, setUsername] = useState("");
 
@@ -115,9 +117,9 @@ export default function CommentComponent({ comment }: PropType) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: comment.user_id})} style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.actionsContainer}>
                 <Text style={styles.description}>{comment.description}</Text>
             </View>

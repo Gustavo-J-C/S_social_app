@@ -12,14 +12,20 @@ import { Post } from "../@types/posts";
 import { useAuth } from "./auth";
 import { Platform } from "react-native";
 import { getPost } from "../utils/posts/getPost";
+import { ProfileData, User } from "../@types/user";
 
 interface IDataContextData {
     posts: Post[];
     userPosts: Post[];
+    // userProfileData: ProfileData;
     loading: boolean;
     hasMorePosts: boolean;
+    userFollowing: User[];
+    userFollowers: User[];
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
+    getInitialPosts: () => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
+    fetchUserData: () => Promise<void>;
     unlikePost: (postId: number) => Promise<void>;
     getUserInfo: (userId: number) => Promise<any>;
     getProfileData: (userId: string) => Promise<any>;
@@ -41,6 +47,8 @@ function DataProvider({ children }: IDataProviderProps) {
     const [page, setPage] = useState(1);
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [userPosts, setUserPosts] = useState<Post[]>([]);
+    const [userFollowers, setUserFollowers] = useState<User[]>([])
+    const [userFollowing, setUserFollowing] = useState<User[]>([])
     const [userCache, setUserCache] = useState(new Map());
 
     const userCacheKey = "@MyApp:userCache";
@@ -51,13 +59,9 @@ function DataProvider({ children }: IDataProviderProps) {
         }
         try {
             setLoading(true);
-
             const response = await api.get(`/feed/posts?page=1&userId=${user?.id}`);
-            const userPostsResponse = await api.get(`user/${user?.id}/posts`);
 
-            const responsePosts = userPostsResponse.data.data.posts
             const postResponse = response.data.posts
-            setUserPosts(responsePosts);
 
             if (postResponse.length % 6 != 0 || postResponse.length == 0) {
                 setHasMorePosts(false)
@@ -91,8 +95,7 @@ function DataProvider({ children }: IDataProviderProps) {
             await sendImages(postId, images);
 
         } catch (error: any) {
-            console.error("Erro ao criar post:", error);
-
+            console.error("Erro ao criar post 1:", error);
         }
     }
 
@@ -115,10 +118,10 @@ function DataProvider({ children }: IDataProviderProps) {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
             }
-            const { data: { data: { post } } } = await api.get(`/feed/post/${postId}`);
-            setPosts((prevPosts) => [post, ...prevPosts]);
             const newPost = await getPost(postId);
-            setUserPosts((prevPosts) => ([...prevPosts, newPost]))
+            
+            setPosts((prevPosts) => [newPost, ...prevPosts]);
+            setUserPosts((prevPosts) => ([newPost, ...prevPosts ]))
         } catch (error) {
             console.error("Erro ao enviar imagens:", error);
             throw error;
@@ -200,7 +203,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
             try {
                 setUserCache((prevCache) => {
-                    const updatedCache = new Map(prevCache.set(userId, userInfo));                    
+                    const updatedCache = new Map(prevCache.set(String(userId), userInfo));                    
         
                     try {
                         AsyncStorage.setItem(userCacheKey, JSON.stringify(Object.fromEntries(updatedCache)));
@@ -253,7 +256,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
     const getProfileData = async (userId: string) => {
         try {
-            const { data: {data: profileData}} = await api.get(`profile/${userId}/summary`)            
+            const { data: {data: profileData}} = await api.get(`profile/${userId}/summary?requestUser=${user.id}`)            
             return profileData;
         } catch (error) {
             console.error("Error parsing user cache:", error);
@@ -261,14 +264,26 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     }
 
+    const fetchData = async () => {
+        try {
+            const profileData: ProfileData = await getProfileData(String(user?.id));
+
+            setUserPosts(profileData.posts);
+            setUserFollowing(profileData.following.data);
+            setUserFollowers(profileData.followers.data);
+        } catch (error) {
+            console.error('Error fetching profile data:', error);
+        }
+    };
+
     useEffect(() => {
 
         loadUserCache();
+        
     }, []);
 
     useEffect(() => {
-        user ? getInitialPosts() : false;
-
+        user ? (Promise.all([getInitialPosts(), fetchData()])) : false;
     }, [user]);
 
     return (
@@ -278,9 +293,13 @@ function DataProvider({ children }: IDataProviderProps) {
                 loading,
                 hasMorePosts,
                 userPosts,
+                userFollowing,
+                userFollowers,
                 getPosts: loadMorePosts, // Renomeando para refletir a funcionalidade de carregar mais posts
+                getInitialPosts,
                 likePost,
                 unlikePost,
+                fetchUserData: fetchData,
                 getPostLikes,
                 getPostComments,
                 getUserInfo,

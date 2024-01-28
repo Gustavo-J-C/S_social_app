@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, Text, ActivityIndicator, Modal, Alert, View, Dimensions, StyleSheet, TouchableOpacity, Animated, TextInput } from "react-native";
+import { FlatList, ActivityIndicator, Modal, View, Dimensions, StyleSheet, TouchableOpacity, TextInput, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createComment } from '../../utils/comments/createComment'
 import { FontAwesome } from "@expo/vector-icons";
@@ -10,18 +10,19 @@ import { useAuth } from "../../hooks/auth";
 import { Post } from "../../@types/posts";
 import { Comment } from "../../@types/comments";
 import theme from "../../theme";
+import CommentModal from "../../components/Comment/commentModal";
 
-export default function Home({navigation}: any) {
-  const { posts, getPosts, loading, hasMorePosts, getPostComments } = useData();
+export default function Home({ navigation }: any) {
+  const { posts, getPosts, loading, getInitialPosts, getPostComments } = useData();
 
   const [currentPosts, setCurrentPosts] = useState<Post[]>(posts);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number>();
   const [postComments, setPostComments] = useState<Comment[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [commentDescription, setCommentDescription] = useState("");
-  const fadeAnimation = new Animated.Value(1);
 
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     setCurrentPosts(posts)
@@ -35,38 +36,41 @@ export default function Home({navigation}: any) {
     })
   }
 
+  const onRefresh = () => {
+    getInitialPosts().then(() => setRefreshing(false));
+  };
+
   const handleCreateComment = async () => {
     if (user?.id === undefined || selectedPostId === undefined) {
       return;
     }
-  
+
     try {
       const { data } = await createComment(user?.id, selectedPostId, commentDescription);
-      
+
       const updatedPosts = currentPosts.map((element) => {
         if (element.id === selectedPostId) {
           element.comment_count++;
         }
         return element;
       });
-  
+
       setCurrentPosts(updatedPosts);
       setPostComments((prevComments) => [...prevComments, data]);
       setCommentDescription("");
     } catch (error) {
       console.error('Error creating comment:', error);
-      // Handle the error according to your application's needs
     }
   };
-  
+
 
   const handleComment = async () => {
     try {
-        setModalVisible(!modalVisible);
-        if (modalVisible) {
-          setPostComments([])
-          setCommentDescription("")
-        }
+      setModalVisible(!modalVisible);
+      if (modalVisible) {
+        setPostComments([])
+        setCommentDescription("")
+      }
     } catch (error) {
       console.error('Error handling comment:', error);
     }
@@ -74,7 +78,7 @@ export default function Home({navigation}: any) {
 
   const handleEndReached = () => {
     if (!loading) {
-      getPosts(); 
+      getPosts();
     }
   };
 
@@ -126,6 +130,15 @@ export default function Home({navigation}: any) {
           </View>
         </View>
       </Modal>
+      {/* <CommentModal
+        visible={modalVisible}
+        onClose={handleComment}
+        comments={postComments}
+        onRefresh={onRefresh}
+        loading={loading}
+        handleCreateComment={handleCreateComment}
+        onEndReached={handleEndReached}
+      /> */}
       <FlatList
         contentContainerStyle={{
           alignItems: "center",
@@ -134,8 +147,14 @@ export default function Home({navigation}: any) {
         data={currentPosts}
         renderItem={({ item }) => <PostComponent navigation={navigation} handleComment={getCommentsData} post={item} />}
         keyExtractor={(_, index) => index.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
         onEndReached={handleEndReached}
-        onEndReachedThreshold={0.1}
+        onEndReachedThreshold={0.4}
         ListFooterComponent={renderFooter}
       />
     </SafeAreaView>
