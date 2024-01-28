@@ -11,7 +11,7 @@ routes.get('/:userId/summary', profileController.getProfileSumary);
 routes.get('/:userId/following', profileController.getFollowing);
 routes.get('/:userId/followers', profileController.getFollowers);
 
-routes.post('/:userId/follow', authenticateToken, profileController.follow)
-routes.post('/:userId/unfollow', authenticateToken, profileController.unfollow)
+routes.post('/follow', authenticateToken, profileController.follow)
+routes.post('/unfollow', authenticateToken, profileController.unfollow)
 
 module.exports = routes

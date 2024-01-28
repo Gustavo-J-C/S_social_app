@@ -8,7 +8,7 @@ const authenticateToken = require('../middlewares/authMiddleware');
 routes.get('/posts', feedController.getPosts)
 
 routes.get('/post/:postId', feedController.getPost)
-routes.delete('/post/:id', feedController.deletePost)
+routes.delete('/post/:id', authenticateToken, feedController.deletePost)
 
 routes.get('/user/:userId/posts', authenticateToken, feedController.getUserPosts);
 

@@ -32,8 +32,15 @@ exports.getProfile = async function (req, res) {
 exports.getProfileSumary = async (req, res) => {
     try {
         const userId = req.params.userId;
+        const requestUser = req.query.requestUser;
 
-        // Retrieve user details
+        if (requestUser) {
+            const follower = await Follower.findAll({
+                where: {
+                    users_followed_id: requestUser
+                }
+            })
+        }
         const user = await User.findByPk(userId);
 
         if (!user) {
@@ -46,14 +53,21 @@ exports.getProfileSumary = async (req, res) => {
             include: [{ model: User, as: 'followerUser' }],
         });
 
+        let isFriend = false;
 
-        const followerUsers =  {
+        const followerUsers = {
             count: followers.length,
-            data: followers.map((entry) => ({
-                id: entry.followerUser.id,
-                name: entry.followerUser.name,
-                email: entry.followerUser.email,
-            }))
+            data: followers.map((entry) => {
+                if (entry.followerUser.id == requestUser) {
+                    isFriend = true;
+                }
+
+                return {
+                    id: entry.followerUser.id,
+                    name: entry.followerUser.name,
+                    email: entry.followerUser.email,
+                }
+            })
         }
 
         // Retrieve following
@@ -90,6 +104,7 @@ exports.getProfileSumary = async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
+            isFriend,
             followers: followerUsers,
             following: followingUsers,
             posts

@@ -2,6 +2,7 @@ const Post = require("../models/PostModel");
 const PostImage = require('../models/PostImageModel');
 const PostLike = require('../models/PostLikeModel');
 const Comment = require('../models/CommentModel');
+const User = require("../models/UserModel");
 
 exports.getPosts = async function (req, res) {
     try {
@@ -17,7 +18,13 @@ exports.getPosts = async function (req, res) {
         const posts = await Post.scope(['withLikeCount', 'withCommentCount', { method: ['withLikeByUser', userId] }]).findAll({
             offset: offset,
             limit: pageSize,
-            include: [PostImage],
+            include: [
+                PostImage,
+                {
+                    model: User,
+                    attributes: ['id', 'name', 'email']
+                }
+            ],
             order: [['created_at', 'DESC']],
             userId
         })
@@ -34,8 +41,11 @@ exports.getPost = async function (req, res) {
         const postId = req.params.postId || ""
 
         const post = await Post.findByPk(postId, {
-            include: [PostImage],
-            order: [['created_at', 'DESC']],
+            include: [PostImage,
+            {
+                model: User,
+                attributes: ['id', 'name', 'email']
+            }]
         })
 
         res.send({
@@ -127,6 +137,7 @@ exports.uploadPostImages = async function (req, res) {
 
         // return
         const { originalname, mimetype, filename, size, key, location: url = '' } = req.file;
+
         // return
 
         // Crie o registro de imagem do post no banco de dados usando o modelo PostImage
@@ -135,7 +146,7 @@ exports.uploadPostImages = async function (req, res) {
             originalname,
             type: mimetype,
             path: req.file.path,
-            filename,
+            filename: key,
             url,
             size,
         });
@@ -169,7 +180,7 @@ exports.likePost = async function (req, res) {
 
         res.json({ message: 'You liked the post.' });
     } catch (error) {
-        console.log(error); 
+        console.log(error);
         if (error.parent?.sqlState === '23000') {
 
             if (error.index === 'fk_users_has_posts_posts1' && error.value === String(req?.params?.postId)) {

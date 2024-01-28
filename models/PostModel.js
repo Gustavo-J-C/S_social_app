@@ -3,6 +3,7 @@ const sequelize = require('../database');
 const PostImage = require('./PostImageModel');
 const Comment = require('./CommentModel');
 const PostLike = require('./PostLikeModel');
+const User = require('./UserModel');
 
 const Post = sequelize.define('posts', {
   id: {
@@ -19,8 +20,8 @@ const Post = sequelize.define('posts', {
     allowNull: false,
   },
   created_at: {
-    type: Sequelize.DATE,
-    defaultValue: new Date(),
+    type: Sequelize.DataTypes.DATE,
+    defaultValue: Sequelize.DataTypes.NOW,
     allowNull: false,
   },
   deleted_at: {
@@ -33,6 +34,7 @@ const Post = sequelize.define('posts', {
 Post.hasMany(PostImage, { foreignKey: 'post_id' });
 Post.hasMany(Comment, { foreignKey: 'post_id' });
 Post.hasMany(PostLike, { foreignKey: 'post_id' });
+Post.belongsTo(User, { foreignKey: 'users_id' });
 
 Post.addScope('withLikeCount', {
   attributes: {
