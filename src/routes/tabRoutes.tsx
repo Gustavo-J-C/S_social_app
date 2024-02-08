@@ -1,18 +1,15 @@
 import { Feather, Octicons, Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Home from "../screens/home/index";
 import { Platform, View } from "react-native";
 import theme from "../theme";
-import Profile from "../screens/profile";
 import { Add } from "../screens/add";
 import { HomeRoutes } from "./homeRoutes";
-import { useAuth } from "../hooks/auth";
+import { ProfileRoutes } from "./profileRoutes";
 
 const Tab = createBottomTabNavigator();
 
 export function TabRoutes() {
 
-    const {user} = useAuth()
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -56,12 +53,7 @@ export function TabRoutes() {
             />
             <Tab.Screen
                 name="Profile"
-                options={({ navigation, route }) => ({
-                    headerShown: true,
-                    headerShadowVisible: false,
-                    title: user?.name,
-                })}
-                component={Profile}
+                component={ProfileRoutes}
             />
         </Tab.Navigator>
     );

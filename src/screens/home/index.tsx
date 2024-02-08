@@ -10,7 +10,6 @@ import { useAuth } from "../../hooks/auth";
 import { Post } from "../../@types/posts";
 import { Comment } from "../../@types/comments";
 import theme from "../../theme";
-import CommentModal from "../../components/Comment/commentModal";
 
 export default function Home({ navigation }: any) {
   const { posts, getPosts, loading, getInitialPosts, getPostComments } = useData();
@@ -42,6 +41,8 @@ export default function Home({ navigation }: any) {
 
   const handleCreateComment = async () => {
     if (user?.id === undefined || selectedPostId === undefined) {
+      console.log(123);
+      
       return;
     }
 

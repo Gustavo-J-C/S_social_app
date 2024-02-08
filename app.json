@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +26,8 @@
       "permissions": [
         "INTERNET"
       ],
-      "package": "com.chmhuster.social"
+      "package": "com.chmhuster.social",
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/favicon.png"

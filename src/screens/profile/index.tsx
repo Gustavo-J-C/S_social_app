@@ -29,7 +29,7 @@ export default function Profile({ navigation }: any) {
                                 <ImageArea>
                                     <Image
                                         style={styles.tinyLogo}
-                                        source={{ uri: 'https://i.stack.imgur.com/YQu5k.png' }}
+                                        source={{ uri: user?.image?.url  || 'https://i.stack.imgur.com/YQu5k.png' }}
                                     />
                                 </ImageArea>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -52,6 +52,7 @@ export default function Profile({ navigation }: any) {
                         </Header>
                         <View style={{ paddingTop: 20, gap: 10, flexDirection: 'row', justifyContent: 'space-evenly' }}>
                             <TouchableOpacity
+                                onPress={() => navigation.push("EditProfile")}
                                 style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.TEXT.GRAY }}
                             >
                                 <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>Editar Perfil</Text>
@@ -95,8 +96,8 @@ export default function Profile({ navigation }: any) {
 
 const styles = StyleSheet.create({
     tinyLogo: {
-        width: 70,
-        height: 70,
+        width: 80,
+        height: 80,
         borderRadius: 45
     },
     logo: {

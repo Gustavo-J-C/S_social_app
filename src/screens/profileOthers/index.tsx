@@ -6,7 +6,7 @@ import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import { Post } from "../../@types/posts";
 import { api } from "../../services/api";
-import { ProfileData, User } from "../../@types/user";
+import { ProfileData, User, UserImage } from "../../@types/user";
 
 export default function ProfileOthers({ navigation, route }: any) {
 
@@ -16,6 +16,7 @@ export default function ProfileOthers({ navigation, route }: any) {
     const [isFriend, setIsFriend] = useState<boolean>(false)
     const [profileFollowers, setProfileFollowers] = useState<number>(0)
     const [profileFollowing, setProfileFollowing] = useState<number>(0)
+    const [profileImage, setProfileImage] = useState<UserImage>()
     const [refreshing, setRefreshing] = useState(true)
 
     const userId = route.params.userId
@@ -24,6 +25,7 @@ export default function ProfileOthers({ navigation, route }: any) {
         try {
             const profileData: ProfileData = await getProfileData(userId);
 
+            setProfileImage(profileData.userImage);
             setProfilePosts(profileData.posts);
             setIsFriend(profileData.isFriend);
             setProfileFollowing(profileData.following);
@@ -76,7 +78,7 @@ export default function ProfileOthers({ navigation, route }: any) {
                                 <ImageArea>
                                     <Image
                                         style={styles.tinyLogo}
-                                        source={{ uri: 'https://i.stack.imgur.com/YQu5k.png' }}
+                                        source={{ uri: profileImage?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
                                     />
                                 </ImageArea>
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -146,8 +148,8 @@ export default function ProfileOthers({ navigation, route }: any) {
 
 const styles = StyleSheet.create({
     tinyLogo: {
-        width: 70,
-        height: 70,
+        width: 80,
+        height: 80,
         borderRadius: 45
     },
     logo: {

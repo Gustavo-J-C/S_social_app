@@ -4,7 +4,9 @@ import {
     useState,
     useContext,
     ReactNode,
-    useEffect
+    useEffect,
+    Dispatch,
+    SetStateAction
 } from "react";
 import { api } from "../services/api";
 import Toast from "react-native-toast-message";
@@ -23,11 +25,12 @@ interface ISignInCredentials {
 }
 
 interface IAuthContextData {
-    user: User | undefined;
+    user: User;
     loadingUser: boolean;
     signIn: (credentials: ISignInCredentials) => Promise<void>;
     signUp: (credentials: ISignUpCredentials) => Promise<void>;
     signOut: () => Promise<void>;
+    setUser: Dispatch<SetStateAction<User>>;
 }
 
 interface IAuthProviderProps {
@@ -37,7 +40,7 @@ interface IAuthProviderProps {
 const AuthContext = createContext<IAuthContextData>({} as IAuthContextData);
 
 function AuthProvider({ children }: IAuthProviderProps) {
-    const [user, setUser] = useState<IUser>();
+    const [user, setUser] = useState<User>({} as User);
     const [loadingUser, setLoadingUser] = useState(true);
 
     async function signIn({
@@ -45,43 +48,32 @@ function AuthProvider({ children }: IAuthProviderProps) {
         password,
     }: ISignInCredentials) {
         try {
-            const response = await fetch("http://social.chmhuster.com.br:3000/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
+            const response = await api.post("auth/login",
+                {
                     email,
                     password,
-                }),
-            });
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-    
-            const responseData = await response.json();
-    
-            if (responseData?.data?.token) {
-                api.defaults.headers.authorization = responseData.data.token;
-    
-                const dataSave = {
-                    id: responseData.data.user.id,
-                    name: responseData.data.user.name,
+                },
+            );
+
+            const responseData = response.data.data
+            if (responseData?.token) {
+                api.defaults.headers.authorization = responseData.token;
+
+                const userData = responseData.user
+                const dataSave: User = {
+                    id: userData.id,
+                    name: userData.name,
+                    nickName: userData.nickname,
                     email,
                 };
-    
+
+                console.log(userData);
+
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
-                await AsyncStorage.setItem("TOKEN", responseData.data.token);
-                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.data?.refreshToken);
-    
+                await AsyncStorage.setItem("TOKEN", responseData.token);
+                await AsyncStorage.setItem("REFRESH_TOKEN", responseData?.refreshToken);
+
                 setUser(dataSave);
-                Toast.show({
-                    type: "success",
-                    text1: "Sucesso",
-                    text2: "Login realizado com sucesso!",
-                    position: "bottom",
-                });
             } else {
                 throw new Error("Token not received");
             }
@@ -90,7 +82,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             throw error;
         }
     }
-    
+
 
     async function signUp({
         name,
@@ -111,9 +103,12 @@ function AuthProvider({ children }: IAuthProviderProps) {
             if (responseData?.token) {
                 api.defaults.headers.authorization = responseData?.token;
 
-                const dataSave = {
-                    id: responseData.user.id,
-                    name: responseData.user.name,
+                const userData = responseData.data.user
+
+                const dataSave: User = {
+                    id: userData.id,
+                    name: userData.name,
+                    nickName: userData.userName,
                     email,
                 };
 
@@ -137,7 +132,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
         const refreshTokenStoraged = await AsyncStorage.getItem("REFRESH_TOKEN") || "";
 
         if (userStorage && tokenStorage) {
-            const userLogged = JSON.parse(userStorage) as IUser;
+            const userLogged = JSON.parse(userStorage) as User;
             api.defaults.headers.authorization = tokenStorage;
             renewToken(refreshTokenStoraged);
             setUser({ ...userLogged });
@@ -147,7 +142,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
 
     async function signOut() {
         try {
-            setUser({} as IUser);
+            setUser({} as User);
             await AsyncStorage.removeItem("USER");
             await AsyncStorage.removeItem("TOKEN");
             await AsyncStorage.removeItem("REFRESH_TOKEN");
@@ -161,7 +156,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
         try {
             const response = await api.post("/auth/refresh-token", null, { headers: { refresh_token: oldRefreshToken } });
 
-            const { accessToken , refreshToken } = response?.data;
+            const { accessToken, refreshToken } = response?.data;
 
             if (accessToken) {
                 api.defaults.headers.authorization = accessToken;
@@ -193,6 +188,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             value={{
                 user,
                 loadingUser,
+                setUser,
                 signIn,
                 signUp,
                 signOut

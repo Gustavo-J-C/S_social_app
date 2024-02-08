@@ -23,6 +23,8 @@ interface IDataContextData {
     userFollowing: number;
     userFollowers: number;
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
+    updateProfileImage: ( image: string) => Promise<void>;
+    editProfile: ( name: string, nickname: string) => Promise<void>;
     getInitialPosts: () => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
     fetchUserData: () => Promise<void>;
@@ -41,7 +43,7 @@ interface IDataProviderProps {
 const DataContext = createContext<IDataContextData>({} as IDataContextData);
 
 function DataProvider({ children }: IDataProviderProps) {
-    const { user } = useAuth()
+    const { user, setUser } = useAuth()
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -119,9 +121,9 @@ function DataProvider({ children }: IDataProviderProps) {
                 });
             }
             const newPost = await getPost(postId);
-            
+
             setPosts((prevPosts) => [newPost, ...prevPosts]);
-            setUserPosts((prevPosts) => ([newPost, ...prevPosts ]))
+            setUserPosts((prevPosts) => ([newPost, ...prevPosts]))
         } catch (error) {
             console.error("Erro ao enviar imagens:", error);
             throw error;
@@ -129,7 +131,7 @@ function DataProvider({ children }: IDataProviderProps) {
     }
 
     async function loadMorePosts() {
-        if (!user?.id || !hasMorePosts) {            
+        if (!user?.id || !hasMorePosts) {
             return
         }
         try {
@@ -190,34 +192,34 @@ function DataProvider({ children }: IDataProviderProps) {
 
     const getUserInfo = async (userId: number) => {
         const cachedUser = userCache.get(String((userId)));
-        
+
         if (cachedUser) {
             return cachedUser;
         }
-    
+
         try {
             const response = await api.get(`/profile/${userId}`);
             const userInfo = response.data;
-    
+
             setUserCache((prevCache) => new Map(prevCache.set(userId, userInfo)));
 
             try {
                 setUserCache((prevCache) => {
-                    const updatedCache = new Map(prevCache.set(String(userId), userInfo));                    
-        
+                    const updatedCache = new Map(prevCache.set(String(userId), userInfo));
+
                     try {
                         AsyncStorage.setItem(userCacheKey, JSON.stringify(Object.fromEntries(updatedCache)));
                     } catch (saveError) {
                         console.error("Error saving user info to AsyncStorage:", saveError);
                     }
-        
+
                     return updatedCache;
                 });
-        
+
             } catch (saveError) {
                 console.error("Error saving user info to AsyncStorage:", saveError);
             }
-    
+
             return userInfo;
         } catch (error) {
             console.error(`Error fetching user info for userId ${userId}:`, error);
@@ -238,7 +240,7 @@ function DataProvider({ children }: IDataProviderProps) {
     const loadUserCache = async () => {
         try {
             const cachedUsers = await AsyncStorage.getItem(userCacheKey);
-            
+
 
             if (cachedUsers) {
                 try {
@@ -256,7 +258,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
     const getProfileData = async (userId: string) => {
         try {
-            const { data: {data: profileData}} = await api.get(`profile/${userId}/summary?requestUser=${user.id}`)            
+            const { data: { data: profileData } } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
             return profileData;
         } catch (error) {
             console.error("Error parsing user cache:", error);
@@ -264,11 +266,21 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     }
 
+    const editProfile = async ( name: string, nickname: string) => {
+        try {
+            const response = await api.patch(`/profile/${user.id}/edit`, { name, nickname });
+            setUser({ ...user, name, nickName: nickname });
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        }
+    };
+
     const fetchData = async () => {
         try {
             const profileData: ProfileData = await getProfileData(String(user?.id));
 
             setUserPosts(profileData.posts);
+            setUser((prev) => ({...prev, image: profileData.userImage}))
             setUserFollowing(profileData.following);
             setUserFollowers(profileData.followers);
         } catch (error) {
@@ -276,15 +288,34 @@ function DataProvider({ children }: IDataProviderProps) {
         }
     };
 
+    async function updateProfileImage( image: string) {
+        try {
+            const formData = new FormData();
+            const dataObj = {
+                uri: image,
+                type: 'image/jpeg',
+                name: 'profile_image.jpg',
+            }
+
+            formData.append('file', dataObj);
+
+            const response = await api.post(`/users/${user.id}/profile-image`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+        } catch (error) {
+            console.error('Error updating profile image:', error);
+        }
+    }
+
     useEffect(() => {
 
         loadUserCache();
-        
+
     }, []);
 
     useEffect(() => {
         user ? (Promise.all([getInitialPosts(), fetchData()])) : false;
-    }, [user]);
+    }, [user.id]);
 
     return (
         <DataContext.Provider
@@ -298,6 +329,8 @@ function DataProvider({ children }: IDataProviderProps) {
                 getPosts: loadMorePosts, // Renomeando para refletir a funcionalidade de carregar mais posts
                 getInitialPosts,
                 likePost,
+                updateProfileImage,
+                editProfile,
                 unlikePost,
                 fetchUserData: fetchData,
                 getPostLikes,
