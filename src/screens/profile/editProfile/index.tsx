@@ -163,7 +163,7 @@ export function EditProfile({ navigation }: any) {
           }}
         >
             <Image
-              source={{ uri: user?.image?.url || image || 'https://i.stack.imgur.com/YQu5k.png' }}
+              source={{ uri: image || user?.image?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
             />
           <TouchableOpacity onPress={toggleModal}>
             <PhotoText>trocar foto</PhotoText>

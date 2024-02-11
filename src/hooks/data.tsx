@@ -299,7 +299,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
             formData.append('file', dataObj);
 
-            const response = await api.post(`/users/${user.id}/profile-image`, formData, {
+            const response = await api.patch(`/profile/${user.id}/image`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
         } catch (error) {
