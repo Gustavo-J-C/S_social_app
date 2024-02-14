@@ -29,7 +29,7 @@ type StylesType = {
 const styles: StylesType = {
     container: {
         width: Dimensions.get("window").width * 0.9,
-        backgroundColor: "#fff",
+        backgroundColor: "#F6F7F9",
         borderRadius: 10,
         paddingVertical: 10,
         paddingHorizontal: 20,

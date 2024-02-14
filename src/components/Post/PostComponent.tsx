@@ -84,7 +84,7 @@ const styles: StylesType = {
     }
 };
 
-export default function PostComponent({navigation, post, handleComment }: PropType) {
+export default function PostComponent({ navigation, post, handleComment }: PropType) {
     const images = post.post_images;
 
     const [liked, setLiked] = useState(post.user_liked ? true : false);
@@ -93,7 +93,7 @@ export default function PostComponent({navigation, post, handleComment }: PropTy
 
 
     const timePassed = checkTimePassed(post.created_at);
-    const { likePost, unlikePost, getUserInfo } = useData();
+    const { likePost, unlikePost } = useData();
     const username = post.user.name
 
     const handleToggleLike = async () => {
@@ -108,9 +108,8 @@ export default function PostComponent({navigation, post, handleComment }: PropTy
                 setLiked(true);
                 setLikes(likes + 1);
             }
-
         } catch (error: any) {
-            console.error(error.response);
+            console.error(error.response.data.message);
         }
     };
 
@@ -123,12 +122,12 @@ export default function PostComponent({navigation, post, handleComment }: PropTy
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: post.users_id})} style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: post.users_id })} style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
                 <Text style={styles.timestamp}>{timePassed}</Text>
             </TouchableOpacity>
             {images?.length > 1 &&
-                <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'absolute', top: 45, paddingVertical: 7, zIndex: 1, justifyContent: 'center', left: '80%',  paddingHorizontal: 8, borderRadius: 25, backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'absolute', top: 45, paddingVertical: 7, zIndex: 1, justifyContent: 'center', left: '80%', paddingHorizontal: 8, borderRadius: 25, backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
                     <Text style={{ fontWeight: theme.FONT_WEIGHT.LIGHT, fontSize: 10, color: 'white' }}>{currentImage} / {images.length}</Text>
                 </View>
             }
@@ -150,9 +149,11 @@ export default function PostComponent({navigation, post, handleComment }: PropTy
                 }
             />
             <View style={styles.actionsContainer}>
-                <View style={styles.plusIcon}>
+                <TouchableOpacity
+                    onPress={() => navigation.push("ViewPost", {post: post})}
+                    style={styles.plusIcon}>
                     <Feather name="plus-circle" size={25} color={theme.COLORS.PRIMARY} />
-                </View>
+                </TouchableOpacity>
                 <View style={styles.actionsGroup}>
                     <TouchableOpacity style={styles.actionItem}>
                         <Text>{post.comment_count}</Text>

@@ -5,6 +5,7 @@ import theme from "../theme";
 import { Add } from "../screens/add";
 import { HomeRoutes } from "./homeRoutes";
 import { ProfileRoutes } from "./profileRoutes";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
@@ -16,10 +17,20 @@ export function TabRoutes() {
                 headerShown: false,
                 tabBarActiveTintColor: theme.COLORS.PRIMARY,
                 tabBarInactiveTintColor: theme.TEXT.TERTIARY,
-                tabBarStyle: {
-                    paddingBottom: 6,
-                    height: 58,
-                },
+                tabBarStyle: ((route) => {
+                    const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+                    const noTabRoutes = ["Comments", "ViewPost"]
+                    let styleObj = {
+                        paddingBottom: 6,
+                        height: 58,
+                        display: "auto",
+                    }
+
+                    if (noTabRoutes.includes(routeName) ) {
+                        styleObj.display = "none"
+                    }
+                    return styleObj
+                })(route),
                 tabBarShowLabel: Platform.OS === "ios",
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconComponent;
@@ -43,9 +54,6 @@ export function TabRoutes() {
             <Tab.Screen
                 name="Home"
                 component={HomeRoutes}
-                // options={{
-                //     tabBarBadge: 3,
-                // }}
             />
             <Tab.Screen
                 name="Add"

@@ -41,7 +41,6 @@ export default function Home({ navigation }: any) {
 
   const handleCreateComment = async () => {
     if (user?.id === undefined || selectedPostId === undefined) {
-      console.log(123);
       
       return;
     }
@@ -131,15 +130,6 @@ export default function Home({ navigation }: any) {
           </View>
         </View>
       </Modal>
-      {/* <CommentModal
-        visible={modalVisible}
-        onClose={handleComment}
-        comments={postComments}
-        onRefresh={onRefresh}
-        loading={loading}
-        handleCreateComment={handleCreateComment}
-        onEndReached={handleEndReached}
-      /> */}
       <FlatList
         contentContainerStyle={{
           alignItems: "center",

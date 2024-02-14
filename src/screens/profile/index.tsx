@@ -46,7 +46,7 @@ export default function Profile({ navigation }: any) {
                                 </View>
                             </View>
                             <View style={{ paddingTop: 10, justifyContent: 'center' }}>
-                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{user?.name}</Text>
+                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{user?.nickName}</Text>
                             </View>
 
                         </Header>

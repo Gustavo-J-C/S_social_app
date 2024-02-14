@@ -185,7 +185,7 @@ function DataProvider({ children }: IDataProviderProps) {
                 )
             );
         } catch (error: any) {
-            console.error(error);
+            console.error(Object.keys(error));
             throw error
         }
     }
@@ -257,11 +257,18 @@ function DataProvider({ children }: IDataProviderProps) {
     };
 
     const getProfileData = async (userId: string) => {
+        if (!userId || userId === "undefined") {
+            return
+        }
+        console.log(userId);
+        
         try {
             const { data: { data: profileData } } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
             return profileData;
         } catch (error) {
             console.error("Error parsing user cache:", error);
+            console.log("userId:", userId);
+            
             return;
         }
     }
@@ -279,8 +286,8 @@ function DataProvider({ children }: IDataProviderProps) {
         try {
             const profileData: ProfileData = await getProfileData(String(user?.id));
 
-            setUserPosts(profileData.posts);
-            setUser((prev) => ({...prev, image: profileData.userImage}))
+            setUserPosts(profileData?.posts);
+            setUser((prev) => ({...prev, image: profileData?.userImage}))
             setUserFollowing(profileData.following);
             setUserFollowers(profileData.followers);
         } catch (error) {

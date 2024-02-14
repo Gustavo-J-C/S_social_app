@@ -31,6 +31,7 @@ interface IAuthContextData {
     signUp: (credentials: ISignUpCredentials) => Promise<void>;
     signOut: () => Promise<void>;
     setUser: Dispatch<SetStateAction<User>>;
+    loadStorageData: () => Promise<void>;
 }
 
 interface IAuthProviderProps {
@@ -66,8 +67,6 @@ function AuthProvider({ children }: IAuthProviderProps) {
                     nickName: userData.nickname,
                     email,
                 };
-
-                console.log(userData);
 
                 await AsyncStorage.setItem("USER", JSON.stringify(dataSave));
                 await AsyncStorage.setItem("TOKEN", responseData.token);
@@ -134,7 +133,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
         if (userStorage && tokenStorage) {
             const userLogged = JSON.parse(userStorage) as User;
             api.defaults.headers.authorization = tokenStorage;
-            renewToken(refreshTokenStoraged);
+            // renewToken(refreshTokenStoraged);
             setUser({ ...userLogged });
             setLoadingUser(false);
         }
@@ -174,7 +173,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
                 throw new Error("New accessToken not received");
             }
         } catch (error: any) {
-            console.error("Error renewing token:", error.response.data);
+            console.error("Error renewing token:", error.response.data.message);
             //   throw error;
         }
     }
@@ -188,6 +187,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             value={{
                 user,
                 loadingUser,
+                loadStorageData,
                 setUser,
                 signIn,
                 signUp,
