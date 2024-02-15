@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { FontAwesome, Feather } from "@expo/vector-icons";
-import { Dimensions, Image, ImageStyle, StyleSheet, Text, TextStyle, TouchableOpacity, View } from "react-native";
+import { Dimensions, Text, TextStyle, View } from "react-native";
 import { ViewStyle } from "react-native";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import checkTimePassed from "../../utils/checkTimePassed";
 import { Comment } from "../../@types/comments";
 import { useNavigation } from "@react-navigation/native";
+import { Header, ProfileImage, UserInfosView, UserName } from ".";
 
 type PropType = {
     comment: Comment
@@ -14,16 +14,8 @@ type PropType = {
 
 type StylesType = {
     container: ViewStyle;
-    header: ViewStyle;
-    username: TextStyle;
-    timePassed: TextStyle;
     description: TextStyle;
-    timestamp: ViewStyle;
-    image: ImageStyle;
     actionsContainer: ViewStyle;
-    actionsGroup: ViewStyle;
-    actionItem: ViewStyle;
-    actionItens: ViewStyle;
 };
 
 const styles: StylesType = {
@@ -35,72 +27,29 @@ const styles: StylesType = {
         paddingHorizontal: 20,
         marginTop: 20,
     },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    username: {
-        fontSize: theme.FONT_SIZE.MD,
-        color: theme.COLORS.GRAY_600,
-        lineHeight: 25,
-        fontWeight: theme.FONT_WEIGHT.MEDIUM
-    },
-    timestamp: {
-        marginRight: 20,
-    },
-    image: {
-        width: Dimensions.get("window").width * 0.9,
-        aspectRatio: 1.2,
-        resizeMode: "contain"
-    },
     actionsContainer: {
         justifyContent: "space-between",
         alignItems: "center",
         flexDirection: "row",
         height: 30,
+        marginBottom: 5
     },
     description: {
         color: theme.COLORS.BLACK,
         fontWeight: theme.FONT_WEIGHT.REGULAR,
-        fontSize: theme.FONT_SIZE.SM
+        fontSize: theme.FONT_SIZE.MD
     },
-    timePassed: {
-        color: theme.TEXT.SECONDARY,
-        fontSize: theme.FONT_SIZE.XS
-    },
-    actionsGroup: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: 'baseline',
-        marginRight: 5,
-        gap: 20,
-    },
-    actionItem: {
-        flexDirection: "row",
-        alignItems: "baseline",
-        gap: 5,
-    },
-    actionItens: {
-        flexDirection: "row",
-        flex: 1,
-        justifyContent: "space-between",
-        alignItems: "baseline",
-        gap: 5,
-    }
 };
 
 
 export default function CommentComponent({ comment }: PropType) {
-    // const [liked, setLiked] = useState(false);
-    // const [likes, setLikes] = useState<number>(0);
     const navigation = useNavigation();
 
+    const [username, setUsername] = useState("");
     
     const timePassed = checkTimePassed(comment.created_at);
     const { getUserInfo } = useData();
 
-    const [username, setUsername] = useState("");
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -117,14 +66,16 @@ export default function CommentComponent({ comment }: PropType) {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: comment.user_id})} style={styles.header}>
-                <Text style={styles.username}>{username}</Text>
-            </TouchableOpacity>
+            <Header onPress={() => navigation.push("ProfileOthers", { userName: username, userId: comment.user_id})}>
+                <ProfileImage
+                    source={{ uri: comment?.user?.users_image?.url || 'https://i.stack.imgur.com/YQu5k.png' }} />
+                <UserInfosView style={{ flex: 1 }}>
+                    <UserName>{comment?.user?.name}</UserName>
+                    <Text>{timePassed}</Text>
+                </UserInfosView>
+            </Header>
             <View style={styles.actionsContainer}>
                 <Text style={styles.description}>{comment.description}</Text>
-            </View>
-            <View style={styles.actionsGroup}>
-                <Text style={styles.timePassed}>{timePassed}</Text>
             </View>
         </View>
     );

@@ -260,15 +260,12 @@ function DataProvider({ children }: IDataProviderProps) {
         if (!userId || userId === "undefined") {
             return
         }
-        console.log(userId);
         
         try {
             const { data: { data: profileData } } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
             return profileData;
         } catch (error) {
-            console.error("Error parsing user cache:", error);
-            console.log("userId:", userId);
-            
+            console.error("Error parsing user cache:", error);            
             return;
         }
     }

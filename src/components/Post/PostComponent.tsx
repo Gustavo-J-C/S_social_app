@@ -157,7 +157,7 @@ export default function PostComponent({ navigation, post, handleComment }: PropT
                 <View style={styles.actionsGroup}>
                     <TouchableOpacity style={styles.actionItem}>
                         <Text>{post.comment_count}</Text>
-                        <FontAwesome name="commenting-o" onPress={() => { handleComment(post.id) }} size={25} color={theme.COLORS.PRIMARY} />
+                        <FontAwesome name="commenting-o" onPress={() => navigation.push("Comments", {postId: post.id }) } size={25} color={theme.COLORS.PRIMARY} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleToggleLike} style={styles.actionItem}>
                         <Text>{likes}</Text>

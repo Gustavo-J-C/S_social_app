@@ -4,16 +4,28 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import CommentComponent from "../../components/Comment/CommentComponent";
 import { useData } from "../../hooks/data";
+import { createComment } from "../../utils/comments/createComment";
+import { useAuth } from "../../hooks/auth";
 
 export default function Comments({ navigation, route }: any) {
 
   const postId = route.params.postId
+  const { user } = useAuth();
   const { getPostComments } = useData();
   const [commentDescription, setCommentDescription] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [postComments, setPostComments] = useState<Comment[]>([]);
 
-
+  const handleCreateComment = async () => {
+    try {
+      const { data } = await createComment(user?.id, postId, commentDescription);
+      const newComment = { ...data.comment, user: data.user}
+      setPostComments((prevComments) => [...prevComments, newComment]);
+      setCommentDescription("");
+    } catch (error) {
+      console.error('Error creating comment:', error);
+    }
+  };
 
   const renderFooter = () => {
     return loading ? <ActivityIndicator size="large" /> : null;
@@ -34,7 +46,7 @@ export default function Comments({ navigation, route }: any) {
           alignItems: "center",
           alignSelf: 'center',
           width: (Dimensions.get("window").width * 0.9),
-          minHeight: '90%'
+          height: '90%'
         }}
         data={postComments}
         renderItem={({ item, index }) => <CommentComponent comment={item} />}
@@ -47,7 +59,7 @@ export default function Comments({ navigation, route }: any) {
           placeholder="Adicione um comentário"
           value={commentDescription}
           onChangeText={(e) => setCommentDescription(e)} />
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleCreateComment}>
           <FontAwesome style={{ width: 'auto' }} name="angle-double-right" size={25} />
         </TouchableOpacity>
       </View>
