@@ -1,10 +1,10 @@
-import { Dimensions, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View, StatusBar } from "react-native";
 import { useAuth } from "../../hooks/auth";
-import { Container, Header, ImageArea } from "./styles";
+import { Container, Header, ImageArea, StatusArea } from "./styles";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import { useState } from "react";
-
+import background from "../../assets/imgs/background.png";
 export default function Profile({ navigation }: any) {
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -18,38 +18,51 @@ export default function Profile({ navigation }: any) {
                     refreshing={refreshing}
                     onRefresh={() => fetchUserData().finally(() => setRefreshing(false))}
                 />
-            }
-        >
+            }>
+
+            <Image
+                style={styles.background}
+                source={background}
+            />
+
+
             <FlatList
                 data={userPosts.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 ListHeaderComponent={() => (
                     <>
                         <Header>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <ImageArea>
-                                    <Image
-                                        style={styles.tinyLogo}
-                                        source={{ uri: user?.image?.url  || 'https://i.stack.imgur.com/YQu5k.png' }}
-                                    />
-                                </ImageArea>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userPosts.length}</Text>
-                                    <Text>Publicações</Text>
-                                </View>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowers}</Text>
-                                    <Text>seguidores</Text>
-                                </View>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{userFollowing}</Text>
-                                    <Text>Seguindo</Text>
-                                </View>
-                            </View>
-                            <View style={{ paddingTop: 10, justifyContent: 'center' }}>
-                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{user?.nickName}</Text>
+                            <Text style={{ color: theme.COLORS.WHITE, fontSize: theme.FONT_SIZE.LG, textAlign: 'center', }}>@{user?.name}</Text >
+
+                            <ImageArea style={{ marginTop: (Dimensions.get("window").height * 0.04) }}>
+                                <Image
+                                    style={styles.tinyLogo}
+                                    source={{ uri: user?.image?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
+                                />
+                            </ImageArea>
+
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 15 }}>
+                                <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{user?.nickName}</Text>
                             </View>
 
+                            <StatusArea style={{ backgroundColor: theme.COLORS.GRAY_200 }}>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userPosts.length}</Text>
+                                    <Text>Publicações</Text>
+                                </View>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowers}</Text>
+                                    <Text>seguidores</Text>
+                                </View>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowing}</Text>
+                                    <Text>Seguindo</Text>
+                                </View>
+                            </StatusArea>
                         </Header>
+
                         <View style={{ paddingTop: 20, gap: 10, flexDirection: 'row', justifyContent: 'space-evenly' }}>
                             <TouchableOpacity
                                 onPress={() => navigation.push("EditProfile")}
@@ -96,9 +109,11 @@ export default function Profile({ navigation }: any) {
 
 const styles = StyleSheet.create({
     tinyLogo: {
-        width: 80,
-        height: 80,
-        borderRadius: 45
+        width: 110,
+        height: 110,
+        borderRadius: 100,
+        borderColor: theme.COLORS.WHITE,
+        borderWidth: 4.2,
     },
     logo: {
         width: 66,
@@ -113,5 +128,13 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         width: Dimensions.get("window").width,
         justifyContent: 'flex-start'
+    },
+    background: {
+        width: Dimensions.get("window").width * 2,
+        height: Dimensions.get("window").height * 0.47,
+        marginTop: -(Dimensions.get("window").height * 0.23),
+        marginBottom: -(Dimensions.get("window").height * 0.15),
+        borderBottomLeftRadius: Dimensions.get("window").width,
+        borderBottomRightRadius: Dimensions.get("window").width,
     }
 });

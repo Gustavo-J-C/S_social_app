@@ -29,7 +29,7 @@ export function PressableInput({ inputRef, name, control, size, error, ...rest }
             onChangeText={onChange}
             value={value}
             placeholderTextColor={COLORS.GRAY_500}
-            style={size ? {fontSize: theme.FONT_SIZE[size]} : false}
+            style={size ? { fontSize: theme.FONT_SIZE[size] } : false}
             isError={!!error}
             ref={inputRef}
             {...rest}

@@ -12,7 +12,7 @@ type Props = TouchableOpacityProps & {
 export function ButtonPrimary({ title, isLoading = false, size, ...rest }: Props) {
   return (
     <Container activeOpacity={0.7} disabled={isLoading} {...rest}>
-      {isLoading ? <Loading /> : <Title style={size ? {fontSize: theme.FONT_SIZE[size]} : false}>{title}</Title>}
+      {isLoading ? <Loading /> : <Title style={size ? { fontSize: theme.FONT_SIZE[size] } : false}>{title}</Title>}
     </Container>
   );
 }

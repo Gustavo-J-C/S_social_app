@@ -11,8 +11,8 @@ export function HomeRoutes() {
     return (
         <Navigator screenOptions={{ headerShown: false }} initialRouteName="Index">
             <Screen name="Index" component={Home} />
-            <Screen name="ViewPost" component={ViewPost} 
-                options={ () => ({
+            <Screen name="ViewPost" component={ViewPost}
+                options={() => ({
                     headerShown: true,
                     headerTitle: "",
                     headerShadowVisible: false,
@@ -22,8 +22,8 @@ export function HomeRoutes() {
                     }
                 })}
             />
-            <Screen name="Comments" component={Comments} 
-                options={ () => ({
+            <Screen name="Comments" component={Comments}
+                options={() => ({
                     headerShown: true,
                     tabBarStyle: { display: "none" },
                     headerTitleAlign: "center",
@@ -39,7 +39,7 @@ export function HomeRoutes() {
                     contentStyle: {
                         backgroundColor: "#fff"
                     },
-                    headerShown: true,
+                    headerShown: false,
                     headerShadowVisible: false,
                     title: route.params?.userName,
                 })

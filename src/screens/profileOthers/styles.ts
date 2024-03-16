@@ -12,6 +12,7 @@ export const Container = styled.ScrollView.attrs(() => ({
 export const ImageArea = styled.TouchableOpacity`
   display: flex;
   text-align: center;
+  alignItems: center; 
 `
 
 export const TextMD = styled.Text`
@@ -36,4 +37,12 @@ export const HeaderTitle = styled.Text`
 export const Header = styled.View`
   width: 100%;
   margin-top: 10px;
+`;
+
+export const StatusArea = styled.View`
+  flexDirection: row;
+  justifyContent: space-between;
+  border-radius: 5px;
+  padding: 9px 35px;
+  margin: 20px 0px 0px 0px
 `;

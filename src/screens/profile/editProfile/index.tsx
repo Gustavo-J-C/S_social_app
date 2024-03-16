@@ -30,7 +30,7 @@ type signUpFormInputs = z.infer<typeof signUpFormSchema>;
 export function EditProfile({ navigation }: any) {
 
   const { user } = useAuth();
-  
+
   const { editProfile, updateProfileImage } = useData();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -73,7 +73,7 @@ export function EditProfile({ navigation }: any) {
           { format: ImageManipulator.SaveFormat.JPEG, compress: 0.8 }
         );
 
-        setImage( resizedImage.uri);
+        setImage(resizedImage.uri);
       }
     } catch (error) {
       console.error('Error getting file size:', error);
@@ -115,7 +115,7 @@ export function EditProfile({ navigation }: any) {
       // Verificar se houve alterações nos campos name ou userName
       if (data.name !== user.name || data.userName !== user.nickName) {
         // Fazer a chamada para editar o perfil com os dados alterados
-        await editProfile( data.name, data.userName);
+        await editProfile(data.name, data.userName);
       }
 
       // Verificar se uma nova imagem foi selecionada
@@ -162,9 +162,9 @@ export function EditProfile({ navigation }: any) {
             justifyContent: "center",
           }}
         >
-            <Image
-              source={{ uri: image || user?.image?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
-            />
+          <Image
+            source={{ uri: image || user?.image?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
+          />
           <TouchableOpacity onPress={toggleModal}>
             <PhotoText>trocar foto</PhotoText>
           </TouchableOpacity>

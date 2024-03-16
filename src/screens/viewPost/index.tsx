@@ -63,8 +63,8 @@ export default function ViewPost({ navigation, route }: any) {
                     <Feather name="eye" size={25} color={theme.COLORS.PRIMARY} />
                 </TouchableOpacity> */}
                 <TouchableOpacity
-                    onPress={() => navigation.push("Comments", {postId: post.id})}
-                style={styles.actionItem}>
+                    onPress={() => navigation.push("Comments", { postId: post.id })}
+                    style={styles.actionItem}>
                     <Text>{post?.comment_count}</Text>
                     <FontAwesome name="commenting-o" size={25} color={theme.COLORS.PRIMARY} />
                 </TouchableOpacity>

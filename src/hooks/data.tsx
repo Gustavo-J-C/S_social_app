@@ -23,8 +23,8 @@ interface IDataContextData {
     userFollowing: number;
     userFollowers: number;
     getPosts: (page?: string, pageSize?: string) => Promise<unknown>;
-    updateProfileImage: ( image: string) => Promise<void>;
-    editProfile: ( name: string, nickname: string) => Promise<void>;
+    updateProfileImage: (image: string) => Promise<void>;
+    editProfile: (name: string, nickname: string) => Promise<void>;
     getInitialPosts: () => Promise<unknown>;
     likePost: (postId: string) => Promise<void>;
     fetchUserData: () => Promise<void>;
@@ -260,17 +260,17 @@ function DataProvider({ children }: IDataProviderProps) {
         if (!userId || userId === "undefined") {
             return
         }
-        
+
         try {
             const { data: { data: profileData } } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
             return profileData;
         } catch (error) {
-            console.error("Error parsing user cache:", error);            
+            console.error("Error parsing user cache:", error);
             return;
         }
     }
 
-    const editProfile = async ( name: string, nickname: string) => {
+    const editProfile = async (name: string, nickname: string) => {
         try {
             const response = await api.patch(`/profile/${user.id}/edit`, { name, nickname });
             setUser({ ...user, name, nickName: nickname });
@@ -283,16 +283,18 @@ function DataProvider({ children }: IDataProviderProps) {
         try {
             const profileData: ProfileData = await getProfileData(String(user?.id));
 
-            setUserPosts(profileData?.posts);
-            setUser((prev) => ({...prev, image: profileData?.userImage}))
-            setUserFollowing(profileData.following);
-            setUserFollowers(profileData.followers);
+            if (profileData) {
+                setUserPosts(profileData?.posts);
+                setUser((prev) => ({ ...prev, image: profileData?.userImage }))
+                setUserFollowing(profileData.following);
+                setUserFollowers(profileData.followers);
+            }
         } catch (error) {
             console.error('Error fetching profile data:', error);
         }
     };
 
-    async function updateProfileImage( image: string) {
+    async function updateProfileImage(image: string) {
         try {
             const formData = new FormData();
             const dataObj = {
