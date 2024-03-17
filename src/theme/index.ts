@@ -26,6 +26,8 @@ export default {
 
     ATTENTION: "#EF4444",
 
+    GRAY_BACKGROUND: "#F6F7F9",
+    
     GRAY_50: "#F7FAFC",
     GRAY_100: "#EDF2F7",
     GRAY_200: "#E2E8F0",

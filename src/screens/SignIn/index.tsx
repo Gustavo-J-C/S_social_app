@@ -45,7 +45,8 @@ export function SignIn({ navigation }: any) {
     try {
       setEmailError(null);
       setPasswordError(null);
-
+      console.log(process.env);
+      
       // Validar o e-mail
       if (!emailInput.trim()) {
         setEmailError('O e-mail é obrigatório.');

@@ -27,7 +27,7 @@
         "INTERNET"
       ],
       "package": "com.chmhuster.social",
-      "versionCode": 8
+      "versionCode": 9
     },
     "web": {
       "favicon": "./assets/favicon.png"

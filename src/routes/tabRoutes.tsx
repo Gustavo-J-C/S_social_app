@@ -13,7 +13,7 @@ export function TabRoutes() {
 
     return (
         <Tab.Navigator
-            screenOptions={({ route }) => ({
+            screenOptions={({ route }: any) => ({
                 headerShown: false,
                 tabBarActiveTintColor: theme.COLORS.PRIMARY,
                 tabBarInactiveTintColor: theme.TEXT.TERTIARY,
