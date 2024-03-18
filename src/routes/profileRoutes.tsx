@@ -27,7 +27,7 @@ export function ProfileRoutes() {
                     headerTitleAlign: "center",
                     headerTitleStyle: { color: 'white' },
                     headerShadowVisible: false,
-                    title: user?.name,
+                    title: `@${user?.name}`,
                 })}
             />
             <Screen name="EditProfile" component={EditProfile}

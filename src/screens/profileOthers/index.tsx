@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { Dimensions, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
-import { Container, Header, ImageArea } from "./styles";
+import { FontAwesome } from "@expo/vector-icons";
+import HeaderBG from '../../assets/imgs/profileHeaderBG.png';
+import { Container } from "./styles";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import { Post } from "../../@types/posts";
 import { api } from "../../services/api";
 import { ProfileData, User, UserImage } from "../../@types/user";
+import { Header, HeaderBGImage, Image, ImageArea, MainContainer, StatusArea, TextWrapper, TinyLogo } from "../profile/styles";
 
 export default function ProfileOthers({ navigation, route }: any) {
 
@@ -20,6 +23,9 @@ export default function ProfileOthers({ navigation, route }: any) {
     const [refreshing, setRefreshing] = useState(true)
 
     const userId = route.params.userId
+
+    console.log(route.params);
+
 
     const fetchData = async () => {
         try {
@@ -69,53 +75,55 @@ export default function ProfileOthers({ navigation, route }: any) {
                     onRefresh={fetchData}
                 />
             }>
+            <StatusBar backgroundColor={"transparent"} barStyle={"light-content"} />
+            <HeaderBGImage
+                source={HeaderBG}
+            />
             <FlatList
                 data={profilePosts?.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
                 ListHeaderComponent={() => (
                     <>
-                        <Header>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <ImageArea>
-                                    <Image
-                                        style={styles.tinyLogo}
-                                        source={{ uri: profileImage?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
-                                    />
-                                </ImageArea>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profilePosts.length}</Text>
-                                    <Text>Publicações</Text>
-                                </View>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowers}</Text>
-                                    <Text>seguidores</Text>
-                                </View>
-                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD }}>{profileFollowing}</Text>
-                                    <Text>Seguindo</Text>
-                                </View>
-                            </View>
-                            <View style={{ paddingTop: 10, justifyContent: 'center' }}>
-                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, fontSize: theme.FONT_SIZE.MD }}>{route.params.userName}</Text>
+                        <MainContainer>
+                            <Header>
+                                <TouchableOpacity>
+                                    <FontAwesome size={25} color={'white'} name="arrow-circle-left" />
+                                </TouchableOpacity>
+                                <TextWrapper>
+                                    <Text style={{ color: theme.COLORS.WHITE, fontSize: theme.FONT_SIZE.LG, textAlign: 'center' }}>@{route.params.userName}</Text>
+                                </TextWrapper>
+                                <TouchableOpacity>
+                                    <Text style={{ color: "#7D80EB", backgroundColor: "#fff", padding: 10, fontSize: 16, borderRadius: 20 }}>Follow</Text>
+                                </TouchableOpacity>
+                            </Header>
+                            <ImageArea>
+                                <TinyLogo
+                                    source={{ uri: profileImage?.url || 'https://i.stack.imgur.com/YQu5k.png' }}
+                                />
+                            </ImageArea>
+
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 15 }}>
+                                <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, color: "#000" }}>{route.params.userName}</Text>
                             </View>
 
-                        </Header>
-                        <View style={{ paddingTop: 20, gap: 10, flexDirection: 'row', justifyContent: 'space-evenly' }}>
-                            <TouchableOpacity
-                                onPress={userId == user?.id ? undefined : handleFollow}
-                                style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.TEXT.GRAY }}
-                                disabled={userId == user?.id}
-                            >
-                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>
-                                    {userId == user?.id ? 'Editar Perfil' : isFriend ? 'Deixar de Seguir' : 'Seguir'}
-                                </Text>
-                            </TouchableOpacity>
-                            {userId == user?.id && <TouchableOpacity
-                                onPress={signOut}
-                                style={{ paddingVertical: 5, flex: 1, borderRadius: 5, justifyContent: 'center', alignItems: "center", backgroundColor: theme.COLORS.PRIMARY }}
-                            >
-                                <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, color: 'white' }}>Logout</Text>
-                            </TouchableOpacity>}
-                        </View>
+                            <StatusArea style={{ backgroundColor: theme.COLORS.GRAY_200 }}>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{profilePosts.length}</Text>
+                                    <Text>Publicações</Text>
+                                </View>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{profileFollowers}</Text>
+                                    <Text>seguidores</Text>
+                                </View>
+
+                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{profileFollowing}</Text>
+                                    <Text>Seguindo</Text>
+                                </View>
+                            </StatusArea>
+
+                        </MainContainer>
                     </>
                 )}
                 renderItem={({ item, index }) => {
@@ -123,13 +131,12 @@ export default function ProfileOthers({ navigation, route }: any) {
                         <TouchableOpacity
                             style={
                                 {
-                                    borderRightWidth: index % 3 === 2 ? 0 : 2,
-                                    borderBottomWidth: 2,
-                                    borderColor: "#fff" // Adiciona margem inferior, exceto para as imagens na última linha
+                                    borderRightWidth: index % 2 === 0 ? 15 : 0,
+                                    borderBottomWidth: 15,
+                                    borderColor: "#fff"
                                 }
                             }>
                             <Image
-                                style={styles.image}
                                 source={{ uri: item.post_images[0].url }}
                                 onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
                         </TouchableOpacity>
@@ -137,7 +144,10 @@ export default function ProfileOthers({ navigation, route }: any) {
                 }}
                 showsVerticalScrollIndicator={false}
                 scrollEnabled={false}
-                numColumns={3}
+                ItemSeparatorComponent={
+                    () => <View style={{ width: 100, backgroundColor: 'pink' }}></View>
+                }
+                numColumns={2}
                 contentContainerStyle={styles.contentContainer}
                 ListHeaderComponentStyle={{ width: "100%", alignItems: "center", marginBottom: 30, paddingHorizontal: 20 }}
             />
@@ -147,23 +157,8 @@ export default function ProfileOthers({ navigation, route }: any) {
 
 
 const styles = StyleSheet.create({
-    tinyLogo: {
-        width: 80,
-        height: 80,
-        borderRadius: 45
-    },
-    logo: {
-        width: 66,
-        height: 58,
-    },
-    image: {
-        width: (Dimensions.get("window").width / 3),
-        aspectRatio: 1,
-        resizeMode: "contain",
-    },
     contentContainer: {
-        alignItems: "flex-start",
+        alignItems: "center",
         width: Dimensions.get("window").width,
-        justifyContent: 'flex-start'
-    },
+    }
 });

@@ -46,7 +46,7 @@ export default function CommentComponent({ comment }: PropType) {
     const navigation = useNavigation();
 
     const [username, setUsername] = useState("");
-    
+    const [userInfo, setUserInfo] = useState({});
     const timePassed = checkTimePassed(comment.created_at);
     const { getUserInfo } = useData();
 
@@ -55,6 +55,7 @@ export default function CommentComponent({ comment }: PropType) {
         const fetchUserInfo = async () => {
             try {
                 const userInfo = await getUserInfo(comment.user_id);
+                setUserInfo(userInfo);
                 setUsername(userInfo.name);
             } catch (error) {
                 console.error("Error fetching user info:", error);
@@ -66,7 +67,7 @@ export default function CommentComponent({ comment }: PropType) {
 
     return (
         <View style={styles.container}>
-            <Header onPress={() => navigation.push("ProfileOthers", { userName: username, userId: comment.user_id})}>
+            <Header onPress={() => navigation.push("ProfileOthers", { userName: username, userId: comment.user_id, user: userInfo})}>
                 <ProfileImage
                     source={{ uri: comment?.user?.users_image?.url || 'https://i.stack.imgur.com/YQu5k.png' }} />
                 <UserInfosView style={{ flex: 1 }}>

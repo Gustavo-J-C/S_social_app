@@ -39,7 +39,6 @@ export function HomeRoutes() {
                     contentStyle: {
                         backgroundColor: "#fff"
                     },
-                    headerShown: true,
                     headerShadowVisible: false,
                     title: route.params?.userName,
                 })

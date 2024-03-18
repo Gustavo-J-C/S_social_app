@@ -122,7 +122,7 @@ export default function PostComponent({ navigation, post, handleComment }: PropT
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: post.users_id })} style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.push("ProfileOthers", { userName: username, userId: post.users_id, user: post.user })} style={styles.header}>
                 <Text style={styles.username}>{username}</Text>
                 <Text style={styles.timestamp}>{timePassed}</Text>
             </TouchableOpacity>
