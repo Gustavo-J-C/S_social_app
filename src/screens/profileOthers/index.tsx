@@ -13,7 +13,6 @@ import { Header, HeaderBGImage, Image, ImageArea, MainContainer, StatusArea, Tex
 
 export default function ProfileOthers({ navigation, route }: any) {
 
-    const { signOut, user } = useAuth()
     const { getProfileData } = useData()
     const [profilePosts, setProfilePosts] = useState<Post[]>([])
     const [isFriend, setIsFriend] = useState<boolean>(false)
@@ -24,18 +23,17 @@ export default function ProfileOthers({ navigation, route }: any) {
 
     const userId = route.params.userId
 
-    console.log(route.params);
-
-
     const fetchData = async () => {
         try {
             const profileData: ProfileData = await getProfileData(userId);
 
-            setProfileImage(profileData.userImage);
-            setProfilePosts(profileData.posts);
-            setIsFriend(profileData.isFriend);
-            setProfileFollowing(profileData.following);
-            setProfileFollowers(profileData.followers);
+            if (profileData) {
+                setProfileImage(profileData.userImage);
+                setProfilePosts(profileData.posts);
+                setIsFriend(profileData.isFriend);
+                setProfileFollowing(profileData?.following);
+                setProfileFollowers(profileData?.followers);
+            }
         } catch (error) {
             console.error('Error fetching profile data:', error);
         } finally {
@@ -86,13 +84,13 @@ export default function ProfileOthers({ navigation, route }: any) {
                         <MainContainer>
                             <Header>
                                 <TouchableOpacity>
-                                    <FontAwesome size={25} color={'white'} name="arrow-circle-left" />
+                                    <FontAwesome size={25} color={'white'} name="arrow-circle-left" onPress={() => navigation.pop()}/>
                                 </TouchableOpacity>
                                 <TextWrapper>
                                     <Text style={{ color: theme.COLORS.WHITE, fontSize: theme.FONT_SIZE.LG, textAlign: 'center' }}>@{route.params.userName}</Text>
                                 </TextWrapper>
                                 <TouchableOpacity>
-                                    <Text style={{ color: "#7D80EB", backgroundColor: "#fff", padding: 10, fontSize: 16, borderRadius: 20 }}>Follow</Text>
+                                    <Text style={{ color: "#7D80EB", backgroundColor: "#fff", padding: 10, fontSize: 16, borderRadius: 20 }}>{isFriend ? "Follow" : "Unfollow"}</Text>
                                 </TouchableOpacity>
                             </Header>
                             <ImageArea>

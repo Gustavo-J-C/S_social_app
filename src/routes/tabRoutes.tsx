@@ -1,4 +1,4 @@
-import { Feather, Octicons, Ionicons } from "@expo/vector-icons";
+import { Feather, Octicons, FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Platform, View } from "react-native";
 import theme from "../theme";
@@ -6,6 +6,7 @@ import { Add } from "../screens/add";
 import { HomeRoutes } from "./homeRoutes";
 import { ProfileRoutes } from "./profileRoutes";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import Challenge from "../screens/challenge";
 
 const Tab = createBottomTabNavigator();
 
@@ -26,7 +27,7 @@ export function TabRoutes() {
                         display: "auto",
                     }
 
-                    if (noTabRoutes.includes(routeName) ) {
+                    if (noTabRoutes.includes(routeName)) {
                         styleObj.display = "none"
                     }
                     return styleObj
@@ -45,6 +46,10 @@ export function TabRoutes() {
                         );
                     } else if (route.name === "Profile") {
                         iconComponent = <Octicons name="person" size={focused ? size + 5 : size} color={color} />;
+                    } else if (route.name === "Challenge") {
+                        iconComponent = <FontAwesome6 name="table-cells-large" size={focused ? size + 5 : size} color={color} />;
+                    } else if (route.name === "activity") {
+                        iconComponent = <Feather name="bell" size={focused ? size + 5 : size} color={color} />;
                     }
 
                     return iconComponent;
@@ -54,10 +59,17 @@ export function TabRoutes() {
             <Tab.Screen
                 name="Home"
                 component={HomeRoutes}
+            /><Tab.Screen
+                name="Challenge"
+                component={Challenge}
             />
             <Tab.Screen
                 name="Add"
                 component={Add}
+            />
+            <Tab.Screen
+                name="activity"
+                component={ProfileRoutes}
             />
             <Tab.Screen
                 name="Profile"

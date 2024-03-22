@@ -50,7 +50,6 @@ export const IconArea = styled.TouchableOpacity`
 
 export const Label = styled.Text`
   width: 12%;
-  
   padding-left: 5px;
   margin-bottom: -20px;
   margin-left: 15px;
@@ -77,7 +76,8 @@ export const ButtonLabel = styled.Text`
 `;
 
 export const Text = styled.Text`
-  margin-top: 10%;
+  margin-top: ${(Dimensions.get("window").height / 200)}px;
+  font-size: 15px;
 `
 export const ForgotPasswordLabel = styled.Text`
   color: #5252C7;

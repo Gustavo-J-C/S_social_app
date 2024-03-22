@@ -102,7 +102,7 @@ function AuthProvider({ children }: IAuthProviderProps) {
             if (responseData?.token) {
                 api.defaults.headers.authorization = responseData?.token;
 
-                const userData = responseData.data.user
+                const userData = responseData.user
 
                 const dataSave: User = {
                     id: userData.id,

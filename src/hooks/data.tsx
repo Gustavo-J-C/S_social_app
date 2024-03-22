@@ -65,7 +65,7 @@ function DataProvider({ children }: IDataProviderProps) {
 
             const postResponse = response.data.posts
 
-            if (postResponse.length % 6 != 0 || postResponse.length == 0) {
+            if (postResponse?.length % 6 != 0 || postResponse?.length == 0) {
                 setHasMorePosts(false)
             }
             setPosts(response.data.posts);
@@ -262,8 +262,8 @@ function DataProvider({ children }: IDataProviderProps) {
         }
         
         try {
-            const { data: { data: profileData } } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
-            return profileData;
+            const { data } = await api.get(`/profile/${userId}/summary?requestUser=${user.id}`)
+            return data.data;
         } catch (error) {
             console.error("Error parsing user cache:", error);            
             return;
@@ -282,11 +282,11 @@ function DataProvider({ children }: IDataProviderProps) {
     const fetchData = async () => {
         try {
             const profileData: ProfileData = await getProfileData(String(user?.id));
-
+            
             setUserPosts(profileData?.posts);
             setUser((prev) => ({...prev, image: profileData?.userImage}))
-            setUserFollowing(profileData.following);
-            setUserFollowers(profileData.followers);
+            setUserFollowing(profileData?.following);
+            setUserFollowers(profileData?.followers);
         } catch (error) {
             console.error('Error fetching profile data:', error);
         }

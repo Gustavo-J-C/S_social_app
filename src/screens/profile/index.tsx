@@ -1,17 +1,67 @@
 import { Dimensions, FlatList, Modal, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/auth";
 import HeaderBG from '../../assets/imgs/profileHeaderBG.png';
-import { Container, MainContainer, ImageArea, StatusArea, TinyLogo, Header, TextWrapper, ModalContainer, HeaderBGImage, Image } from "./styles";
+import { Container, MainContainer, ImageArea, StatusArea, TinyLogo, Header, TextWrapper, ModalContainer, HeaderBGImage, Image, StyledTouchableOpacity } from "./styles";
 import { FontAwesome, } from "@expo/vector-icons";
 import theme from "../../theme";
 import { useData } from "../../hooks/data";
 import { useEffect, useState } from "react";
+import { TextInput } from "../SignIn/styles";
+import { Post } from "../../@types/posts";
+
+const PostComponent = ({ item, index, editingPostions, handlePositionChange }: any) => {
+    const [inputValue, setInputValue] = useState(String(index + 1));
+
+    return (
+        <View
+            style={
+                {
+                    borderRightWidth: index % 2 === 0 ? 15 : 0,
+                    borderBottomWidth: 15,
+                    borderColor: "#fff"
+                }
+            }>
+            {editingPostions ?
+                <StyledTouchableOpacity>
+                    <TextInput
+                        style={{ height: 20, minWidth: 30 }}
+                        textAlign="center"
+                        value={inputValue}
+                        keyboardType="numeric"
+                        onChangeText={(text) => {
+                            setInputValue(text.replace(/[^0-9]/g, ''));
+                        }
+                        }
+                        onEndEditing={() => {
+                            if (inputValue != index + 1) {
+                                handlePositionChange(Number(inputValue) - 1, index)
+                                setInputValue(String(index + 1))
+                            }
+                        }
+                        }
+                    />
+                </StyledTouchableOpacity>
+                : false
+            }
+            <Image
+                source={{ uri: item?.post_images[0].url }}
+                onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
+        </View>
+    )
+}
 
 export default function Profile({ navigation }: any) {
 
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const { signOut, user } = useAuth()
+    const [editingPostions, setEditingPositions] = useState<boolean>(false)
+    const [postOrder, setPostOrder] = useState<Post[]>([]);
     const { userPosts, userFollowing, userFollowers, fetchUserData } = useData()
+
+    useEffect(() => {
+        setPostOrder(userPosts);
+    }, [userPosts]);
+
 
     useEffect(() => {
         const unsubscribeFocus = navigation.addListener('focus', () => {
@@ -23,8 +73,28 @@ export default function Profile({ navigation }: any) {
 
     const [modalVisible, setModalVisible] = useState(false);
 
+    const cancelEditing = () => {
+        setPostOrder(userPosts)
+        handleEditPositions();
+    }
+
+    const onSave = () => {
+        handleEditPositions()
+    }
+
+    const handleEditPositions = () => {
+        setEditingPositions(!editingPostions)
+    }
+
     const handleGearIconPress = () => {
         setModalVisible(true);
+    };
+
+    const handlePositionChange = (newIndex: number, oldIndex: number) => {
+        const newOrder = [...postOrder];
+        const movedPost = newOrder.splice(oldIndex, 1)[0];
+        newOrder.splice(newIndex >= 0 ? newIndex : 0, 0, movedPost);
+        setPostOrder(newOrder);
     };
 
     return (
@@ -41,7 +111,7 @@ export default function Profile({ navigation }: any) {
                 source={HeaderBG}
             />
             <FlatList
-                data={userPosts?.filter(post => post.post_images && post.post_images.length > 0 && post.post_images[0] != null)}
+                data={postOrder?.filter(post => post.post_images && post.post_images?.length > 0 && post.post_images[0] != null)}
                 ListHeaderComponent={() => (
                     <>
                         <MainContainer>
@@ -65,42 +135,39 @@ export default function Profile({ navigation }: any) {
 
                             <StatusArea>
 
-                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userPosts.length}</Text>
-                                    <Text>Publicações</Text>
-                                </View>
+                                {!editingPostions ?
+                                    <>
+                                        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                            <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userPosts?.length}</Text>
+                                            <Text>Publicações</Text>
+                                        </View>
 
-                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowers}</Text>
-                                    <Text>seguidores</Text>
-                                </View>
+                                        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                            <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowers}</Text>
+                                            <Text>seguidores</Text>
+                                        </View>
 
-                                <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-                                    <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowing}</Text>
-                                    <Text>Seguindo</Text>
-                                </View>
+                                        <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
+                                            <Text style={{ fontWeight: theme.FONT_WEIGHT.BOLD, fontSize: theme.FONT_SIZE.MD, marginRight: 4 }}>{userFollowing}</Text>
+                                            <Text>Seguindo</Text>
+                                        </View>
+                                    </>
+                                    :
+                                    <>
+                                        <TouchableOpacity onPress={cancelEditing}>
+                                            <Text>Cancelar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={onSave}>
+                                            <Text>salvar</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                }
                             </StatusArea>
 
                         </MainContainer>
                     </>
                 )}
-                renderItem={({ item, index }) => {
-
-                    return (
-                        <TouchableOpacity
-                            style={
-                                {
-                                    borderRightWidth: index % 2 === 0 ? 15 : 0,
-                                    borderBottomWidth: 15,
-                                    borderColor: "#fff"
-                                }
-                            }>
-                            <Image
-                                source={{ uri: item.post_images[0].url }}
-                                onError={(error) => console.error("Erro na imagem:", error.nativeEvent.error)} />
-                        </TouchableOpacity>
-                    );
-                }}
+                renderItem={({ item, index }) => <PostComponent item={item} index={index} handlePositionChange={handlePositionChange} editingPostions={editingPostions} />}
                 scrollEnabled={false}
                 showsVerticalScrollIndicator={false}
                 ItemSeparatorComponent={
@@ -131,7 +198,7 @@ export default function Profile({ navigation }: any) {
                                 <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM }}>Editar Perfil</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={signOut}
+                                onPress={() => {handleEditPositions(), setModalVisible(false)}}
                                 style={{ paddingVertical: 5, height: 40, borderRadius: 5, flexDirection: 'row', }}>
                                 <Text style={{ fontWeight: theme.FONT_WEIGHT.MEDIUM, }}>Mudar ordem de postagens</Text>
                             </TouchableOpacity>

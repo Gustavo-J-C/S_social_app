@@ -38,6 +38,16 @@ export const TinyLogo = styled.Image`
   border: 3px solid ${({theme}) => theme.COLORS.WHITE};
 `
 
+export const StyledTouchableOpacity = styled.TouchableOpacity`
+  position: absolute;
+  top: 5px;
+  right: 0;
+  z-index: 1;
+  background-color: rgba(237, 242, 247, 0.9);
+  padding: 8px;
+  border-radius: 20px;
+`;
+
 export const TextMD = styled.Text`
   font-size: ${({ theme }) => theme.FONT_SIZE.LG}px;
   font-weight: ${({ theme }) => theme.FONT_WEIGHT.MEDIUM};
